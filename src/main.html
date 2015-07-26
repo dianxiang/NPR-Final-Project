@@ -3,21 +3,42 @@
 	<head>
 		<script id="vertShader" type="shader">
 			varying vec2 vUv;
+			varying vec3 vecPos;
+			varying vec3 vecNormal;
+			 
 			void main() {
 			    vUv = uv;
-			    gl_Position = projectionMatrix *
-			                  modelViewMatrix * vec4(position, 1.0 );
-			}
+			    vecPos = (modelMatrix * vec4(position, 1.0 )).xyz;
+			    vecNormal = (modelMatrix * vec4(normal, 0.0)).xyz;
+			    gl_Position = projectionMatrix * viewMatrix *
+			                  vec4(vecPos, 1.0);
+			 }
 		</script>
 		<script id="fragShader" type="shader">
 			precision highp float;
+ 
 			varying vec2 vUv;
-			
+			varying vec3 vecPos;
+			varying vec3 vecNormal;
+			 
 			uniform float color;
 			uniform sampler2D hatch0;
-
+			 
+			uniform vec3 spotLightColor[MAX_SPOT_LIGHTS];
+			uniform vec3 spotLightPosition[MAX_SPOT_LIGHTS];
+			uniform float spotLightDistance[MAX_SPOT_LIGHTS];
+			 
 			void main(void) {
-			    gl_FragColor = texture2D(hatch0, vUv); // vec4(vec3(color, 1.0, 0.0), 1.0);
+			    vec4 addedLights = vec4(0.0,0.0,0.0, 1.0);
+			    
+			    for(int l = 0; l < MAX_SPOT_LIGHTS; l++) {
+			        vec3 lightDirection = normalize( vecPos - spotLightPosition[l] );
+
+			        float dotLight = dot( -lightDirection, vecNormal );
+			        addedLights.rgb += clamp( dotLight, dotLight, dotLight ) * spotLightColor[l];
+			    }
+			    gl_FragColor = texture2D(hatch0, vUv)
+			                       * addedLights;
 			}
 		</script>
 	</head>

@@ -31,7 +31,7 @@ function init() {
 	// Scene with objects
 	scene = new THREE.Scene();
 	
-	light = new THREE.SpotLight( 0xffffff, 1, 1000 );
+	light = new THREE.SpotLight( 0xff0000, 1, 1000 );
 	light.position.set(200, 200, 0).normalize();
 	scene.add(light);
 
@@ -42,21 +42,34 @@ function init() {
 	var shaderContents = {};
 	loadShaderContents(shaderContents);
 	
-	// var material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+
 	var shininess = 50, specular = 0x333333, bumpScale = 3, shading = THREE.SmoothShading;
 	var imgTexture = THREE.ImageUtils.loadTexture( "hatch_0.jpg" );
-	imgTexture.magFilter = THREE.NearestFilter;
+	imgTexture.magFilter = THREE.LinearFilter;
 
 	var material = new THREE.ShaderMaterial( { 
-		  uniforms: { 
-			color: { type: 'f', value: 0.0 },
-			hatch0: { type: 't', value: imgTexture }
-		  }, 
+		  uniforms: THREE.UniformsUtils.merge( [
+		  	  THREE.UniformsLib['lights'],
+			  { 
+				color: { type: 'f', value: 0.0 },
+				hatch0: { type: 't', value: null }
+			  }
+		  ]), 
 		  vertexShader: shaderContents.vertexShader, 
 		  fragmentShader: shaderContents.fragmentShader,  
-		  transparent: true
+		  transparent: true,
+		  lights: true
 	} );
+    material.uniforms.hatch0.value = imgTexture;
 
+	// var material = new THREE.MeshPhongMaterial( {
+	// 	map: imgTexture, 
+	// 	bumpMap: imgTexture,
+	// 	bumpScale: bumpScale, 
+	// 	// color: 0x00ff00, 
+	// 	specular: specular, 
+	// 	shininess: shininess,
+	// 	shading: shading } );
 
 	mesh = new THREE.Mesh( geometry, material );
 	scene.add( mesh );
