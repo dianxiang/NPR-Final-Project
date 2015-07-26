@@ -1,9 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
+		<script id="vertShader" type="shader">
+			varying vec2 vUv;
+			void main() {
+			    vUv = uv;
+			    gl_Position = projectionMatrix *
+			                  modelViewMatrix * vec4(position, 1.0 );
+			}
+		</script>
+		<script id="fragShader" type="shader">
+			precision highp float;
+			varying vec2 vUv;
+			
+			uniform float color;
+			uniform sampler2D hatch0;
+
+			void main(void) {
+			    gl_FragColor = texture2D(hatch0, vUv); // vec4(vec3(color, 1.0, 0.0), 1.0);
+			}
+		</script>
 	</head>
 	<body>
 		<div id="container"></div>
+		<script src="jquery-2.1.4.js"></script>
 		<script src="../../three/build/three.js"></script>
 		<script src="../../three/examples/js/Detector.js"></script>
 		<script src="../../three/examples/js/controls/OrbitControls.js"></script>

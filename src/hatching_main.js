@@ -7,6 +7,11 @@ var light;
 init();
 animate();
 
+function loadShaderContents(contents) {
+	contents.vertexShader = document.getElementById( 'vertShader' ).textContent;
+	contents.fragmentShader = document.getElementById( 'fragShader' ).textContent;
+}
+
 function init() {
 
 	// Creating WebGL renderer
@@ -26,32 +31,32 @@ function init() {
 	// Scene with objects
 	scene = new THREE.Scene();
 	
-	var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
-	directionalLight.position.set( 1, 1, 1 ).normalize();
-	scene.add( directionalLight );
-	
-	light = new THREE.DirectionalLight( 0xffffff, 2, 800 );
-	light.position.set(1, 1, 0).normalize();
+	light = new THREE.SpotLight( 0xffffff, 1, 1000 );
+	light.position.set(200, 200, 0).normalize();
 	scene.add(light);
 
-	var ambientLight = new THREE.AmbientLight( 0x444444 );
-	scene.add( ambientLight );
-
 	// Objects and meshes
-	var geometry = new THREE.BoxGeometry( 200, 200, 200 );
+	var geometry = new THREE.SphereGeometry( 50, 100, 100 );
+
+	// Loading shaders
+	var shaderContents = {};
+	loadShaderContents(shaderContents);
+	
 	// var material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
 	var shininess = 50, specular = 0x333333, bumpScale = 3, shading = THREE.SmoothShading;
-	var imgTexture = THREE.ImageUtils.loadTexture( "lavatile.jpg" );
-	// imgTexture.warpS = imgTexture.wrapT = THREE.RepeatWrapping;
-	imgTexture.anisotropy = 16;
-	var material = new THREE.MeshPhongMaterial( {
-		map: imgTexture, 
-		bumpMap: imgTexture,
-		bumpScale: bumpScale, 
-		// color: 0x00ff00, 
-		specular: specular, 
-		shininess: shininess,
-		shading: shading } );
+	var imgTexture = THREE.ImageUtils.loadTexture( "hatch_0.jpg" );
+	imgTexture.magFilter = THREE.NearestFilter;
+
+	var material = new THREE.ShaderMaterial( { 
+		  uniforms: { 
+			color: { type: 'f', value: 0.0 },
+			hatch0: { type: 't', value: imgTexture }
+		  }, 
+		  vertexShader: shaderContents.vertexShader, 
+		  fragmentShader: shaderContents.fragmentShader,  
+		  transparent: true
+	} );
+
 
 	mesh = new THREE.Mesh( geometry, material );
 	scene.add( mesh );
@@ -78,8 +83,8 @@ function animate() {
 
 function render() {
 	var timer = Date.now() * 0.00025;
-	light.position.x = Math.sin( timer * 7 ) * 50;
-	light.position.y = Math.cos( timer * 5 ) * 50;
-	light.position.z = Math.cos( timer * 3 ) * 50;
+	light.position.x = Math.sin( timer * 7 ) * 300;
+	light.position.y = Math.cos( timer * 5 ) * 300;
+	light.position.z = Math.cos( timer * 3 ) * 300;
 	renderer.render( scene, camera );
 }
