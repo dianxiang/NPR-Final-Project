@@ -23,6 +23,7 @@
 			 
 			uniform float color;
 			uniform sampler2D hatch0;
+			uniform float buckets[BUCKET_SIZE];
 			 
 			uniform vec3 spotLightColor[MAX_SPOT_LIGHTS];
 			uniform vec3 spotLightPosition[MAX_SPOT_LIGHTS];
@@ -35,56 +36,17 @@
 			        vec3 lightDirection = normalize( vecPos - spotLightPosition[l] );
 
 			        float dotLight = dot( -lightDirection, vecNormal );
-			        addedLights.rgb += clamp( dotLight, dotLight, dotLight ) * spotLightColor[l];
+			        addedLights.rgb += clamp( dotLight, dotLight, dotLight ) 
+			        				   * spotLightColor[l];
 			    }
 
-			    float bucket = 0.0;
-			    float bucket0 = 0.2;
-			    float bucket1 = 0.4;
-			    float bucket2 = 0.6;
-			    float bucket3 = 0.8;
-			    float bucket4 = 1.0;
-
-			    if( addedLights.r < bucket0 ) {
-			    	addedLights.r = bucket;
-			    } else if( addedLights.r < bucket1 ) {
-			    	addedLights.r = bucket0;
-			    } else if( addedLights.r < bucket2 ) {
-			    	addedLights.r = bucket1;
-			    } else if( addedLights.r < bucket3 ) {
-			    	addedLights.r = bucket2;
-			    } else if( addedLights.r < bucket4 ) {
-			    	addedLights.r = bucket3;
-			    } else {
-			    	addedLights.r = bucket4;
-			    }
-
-			    if( addedLights.g < bucket0 ) {
-			    	addedLights.g = bucket;
-			    } else if( addedLights.g < bucket1 ) {
-			    	addedLights.g = bucket0;
-			    } else if( addedLights.g < bucket2 ) {
-			    	addedLights.g = bucket1;
-			    } else if( addedLights.g < bucket3 ) {
-			    	addedLights.g = bucket2;
-			    } else if( addedLights.g < bucket4 ) {
-			    	addedLights.g = bucket3;
-			    } else {
-			    	addedLights.g = bucket4;
-			    }
-
-			    if( addedLights.b < bucket0 ) {
-			    	addedLights.b = bucket;
-			    } else if( addedLights.b < bucket1 ) {
-			    	addedLights.b = bucket0;
-			    } else if( addedLights.b < bucket2 ) {
-			    	addedLights.b = bucket1;
-			    } else if( addedLights.b < bucket3 ) {
-			    	addedLights.b = bucket2;
-			    } else if( addedLights.b < bucket4 ) {
-			    	addedLights.b = bucket3;
-			    } else {
-			    	addedLights.b = bucket4;
+			    for(int c = 0; c < 3; c++ ) {
+			    	for( int i = 1; i < BUCKET_SIZE; i++ ) {
+			    		if( addedLights[c] < buckets[i] ) {
+			    			addedLights[c] = buckets[i-1];
+			    			break;
+			    		}
+				    }	
 			    }
 
 			    gl_FragColor = addedLights;

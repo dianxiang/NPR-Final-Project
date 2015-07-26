@@ -47,16 +47,20 @@ function init() {
 	var imgTexture = THREE.ImageUtils.loadTexture( "hatch_0.jpg" );
 	imgTexture.magFilter = THREE.LinearFilter;
 
+	var buckets = [0.0, 0.2, 0.4, 0.6, 0.8, 1.1];
 	var material = new THREE.ShaderMaterial( { 
 		  uniforms: THREE.UniformsUtils.merge( [
 		  	  THREE.UniformsLib['lights'],
 			  { 
 				color: { type: 'f', value: 0.0 },
-				hatch0: { type: 't', value: null }
+				hatch0: { type: 't', value: null },
+				buckets: { type: 'fv1', value: buckets }
 			  }
 		  ]), 
 		  vertexShader: shaderContents.vertexShader, 
-		  fragmentShader: shaderContents.fragmentShader,  
+		  fragmentShader: "#define BUCKET_SIZE " + 
+		  				  buckets.length + " \n" + 
+		  				  shaderContents.fragmentShader,  
 		  transparent: true,
 		  lights: true
 	} );
