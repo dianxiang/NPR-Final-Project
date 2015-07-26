@@ -31,12 +31,12 @@ function init() {
 	// Scene with objects
 	scene = new THREE.Scene();
 	
-	light = new THREE.SpotLight( 0xff0000, 1, 1000 );
+	light = new THREE.SpotLight( 0xff0aaa, 1, 1000 );
 	light.position.set(200, 200, 0).normalize();
 	scene.add(light);
 
 	// Objects and meshes
-	var geometry = new THREE.SphereGeometry( 50, 100, 100 );
+	var geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 );
 
 	// Loading shaders
 	var shaderContents = {};

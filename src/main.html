@@ -29,7 +29,7 @@
 			uniform float spotLightDistance[MAX_SPOT_LIGHTS];
 			 
 			void main(void) {
-			    vec4 addedLights = vec4(0.0,0.0,0.0, 1.0);
+			    vec4 addedLights = vec4(0.0,0.0,0.0,1.0);
 			    
 			    for(int l = 0; l < MAX_SPOT_LIGHTS; l++) {
 			        vec3 lightDirection = normalize( vecPos - spotLightPosition[l] );
@@ -37,8 +37,57 @@
 			        float dotLight = dot( -lightDirection, vecNormal );
 			        addedLights.rgb += clamp( dotLight, dotLight, dotLight ) * spotLightColor[l];
 			    }
-			    gl_FragColor = texture2D(hatch0, vUv)
-			                       * addedLights;
+
+			    float bucket = 0.0;
+			    float bucket0 = 0.2;
+			    float bucket1 = 0.4;
+			    float bucket2 = 0.6;
+			    float bucket3 = 0.8;
+			    float bucket4 = 1.0;
+
+			    if( addedLights.r < bucket0 ) {
+			    	addedLights.r = bucket;
+			    } else if( addedLights.r < bucket1 ) {
+			    	addedLights.r = bucket0;
+			    } else if( addedLights.r < bucket2 ) {
+			    	addedLights.r = bucket1;
+			    } else if( addedLights.r < bucket3 ) {
+			    	addedLights.r = bucket2;
+			    } else if( addedLights.r < bucket4 ) {
+			    	addedLights.r = bucket3;
+			    } else {
+			    	addedLights.r = bucket4;
+			    }
+
+			    if( addedLights.g < bucket0 ) {
+			    	addedLights.g = bucket;
+			    } else if( addedLights.g < bucket1 ) {
+			    	addedLights.g = bucket0;
+			    } else if( addedLights.g < bucket2 ) {
+			    	addedLights.g = bucket1;
+			    } else if( addedLights.g < bucket3 ) {
+			    	addedLights.g = bucket2;
+			    } else if( addedLights.g < bucket4 ) {
+			    	addedLights.g = bucket3;
+			    } else {
+			    	addedLights.g = bucket4;
+			    }
+
+			    if( addedLights.b < bucket0 ) {
+			    	addedLights.b = bucket;
+			    } else if( addedLights.b < bucket1 ) {
+			    	addedLights.b = bucket0;
+			    } else if( addedLights.b < bucket2 ) {
+			    	addedLights.b = bucket1;
+			    } else if( addedLights.b < bucket3 ) {
+			    	addedLights.b = bucket2;
+			    } else if( addedLights.b < bucket4 ) {
+			    	addedLights.b = bucket3;
+			    } else {
+			    	addedLights.b = bucket4;
+			    }
+
+			    gl_FragColor = addedLights;
 			}
 		</script>
 	</head>
