@@ -57,7 +57,6 @@ function init() {
 	for( var i = 0; i < hatchTextures.length; i++ ) {
 		var tex = hatchTextures[i];
 		tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-		console.log(tex);
 	}
 
 	var buckets = [0.0, 0.2, 0.4, 0.6, 0.8, 1.1];
