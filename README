@@ -1,0 +1,10 @@
+## To see examples, run:
+
+cd examples
+python -m HttpSimpleServer
+
+## in your terminal. Then go to "http://localhost:8000" in a browser
+
+
+## To see src... 
+
