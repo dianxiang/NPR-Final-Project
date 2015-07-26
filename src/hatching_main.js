@@ -1,3 +1,4 @@
+
 if( !Detector.webgl ) Detector.addGetWebGLMessage();
 
 var container, camera, scene, renderer, controls;
@@ -39,19 +40,19 @@ function init() {
 
 	// Objects and meshes
 	var geometry = new THREE.BoxGeometry( 200, 200, 200 );
-	// var material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+	var material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
 	var shininess = 50, specular = 0x333333, bumpScale = 3, shading = THREE.SmoothShading;
 	var imgTexture = THREE.ImageUtils.loadTexture( "lavatile.jpg" );
 	// imgTexture.warpS = imgTexture.wrapT = THREE.RepeatWrapping;
 	imgTexture.anisotropy = 16;
-	var material = new THREE.MeshPhongMaterial( {
-		map: imgTexture, 
-		bumpMap: imgTexture,
-		bumpScale: bumpScale, 
-		// color: 0x00ff00, 
-		specular: specular, 
-		shininess: shininess,
-		shading: shading } );
+	// var material = new THREE.MeshPhongMaterial( {
+	// 	map: imgTexture, 
+	// 	bumpMap: imgTexture,
+	// 	bumpScale: bumpScale, 
+	// 	// color: 0x00ff00, 
+	// 	specular: specular, 
+	// 	shininess: shininess,
+	// 	shading: shading } );
 
 	mesh = new THREE.Mesh( geometry, material );
 	scene.add( mesh );
