@@ -21,30 +21,43 @@
 			varying vec3 vecPos;
 			varying vec3 vecNormal;
 			 
-			uniform float color;
-			uniform sampler2D hatch0;
+			uniform sampler2D hatchTextures[BUCKET_SIZE];
+			uniform float buckets[BUCKET_SIZE];
 			 
 			uniform vec3 spotLightColor[MAX_SPOT_LIGHTS];
 			uniform vec3 spotLightPosition[MAX_SPOT_LIGHTS];
 			uniform float spotLightDistance[MAX_SPOT_LIGHTS];
 			 
 			void main(void) {
-			    vec4 addedLights = vec4(0.0,0.0,0.0, 1.0);
-			    
+
+			    // Calculating light information
+			    vec4 addedLights = vec4(0.0,0.0,0.0,1.0);
 			    for(int l = 0; l < MAX_SPOT_LIGHTS; l++) {
 			        vec3 lightDirection = normalize( vecPos - spotLightPosition[l] );
 
 			        float dotLight = dot( -lightDirection, vecNormal );
-			        addedLights.rgb += clamp( dotLight, dotLight, dotLight ) * spotLightColor[l];
+			        addedLights.rgb += clamp( dotLight, dotLight, dotLight ) 
+			        				   * spotLightColor[l];
 			    }
-			    gl_FragColor = texture2D(hatch0, vUv)
-			                       * addedLights;
+
+			    // Bucketing the colors
+			    vec4 textureColor;
+			    for(int c = 0; c < 3; c++ ) {
+			    	for( int i = 1; i < BUCKET_SIZE; i++ ) {
+			    		if( addedLights[c] < buckets[i] ) {
+			    			textureColor = texture2D(hatchTextures[BUCKET_SIZE-i-1], vUv);
+			    			addedLights[c] = buckets[i-1];
+			    			break;
+			    		}
+				    }	
+			    }
+
+			    gl_FragColor = textureColor;
 			}
 		</script>
 	</head>
 	<body>
 		<div id="container"></div>
-		<script src="jquery-2.1.4.js"></script>
 		<script src="../../three/build/three.js"></script>
 		<script src="../../three/examples/js/Detector.js"></script>
 		<script src="../../three/examples/js/controls/OrbitControls.js"></script>

@@ -32,36 +32,52 @@ function init() {
 	// Scene with objects
 	scene = new THREE.Scene();
 	
-	light = new THREE.SpotLight( 0xff0000, 1, 1000 );
+	light = new THREE.SpotLight( 0xff0aaa, 1, 1000 );
 	light.position.set(200, 200, 0).normalize();
 	scene.add(light);
 
 	// Objects and meshes
-	var geometry = new THREE.SphereGeometry( 50, 100, 100 );
-
+	// var geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 );
+	var geometry = new THREE.SphereGeometry( 5, 32, 32 );
 	// Loading shaders
 	var shaderContents = {};
 	loadShaderContents(shaderContents);
 	
 
 	var shininess = 50, specular = 0x333333, bumpScale = 3, shading = THREE.SmoothShading;
-	var imgTexture = THREE.ImageUtils.loadTexture( "hatch_0.jpg" );
-	imgTexture.magFilter = THREE.LinearFilter;
+
+	var hatchTextures = [
+		THREE.ImageUtils.loadTexture( "hatch_0.jpg" ),
+		THREE.ImageUtils.loadTexture( "hatch_1.jpg" ),
+		THREE.ImageUtils.loadTexture( "hatch_2.jpg" ),
+		THREE.ImageUtils.loadTexture( "hatch_3.jpg" ),
+		THREE.ImageUtils.loadTexture( "hatch_4.jpg" ),
+		THREE.ImageUtils.loadTexture( "hatch_5.jpg" )
+	]
+
+	for( var i = 0; i < hatchTextures.length; i++ ) {
+		var tex = hatchTextures[i];
+		tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+	}
+
+	var buckets = [0.0, 0.2, 0.4, 0.6, 0.8, 1.1];
 
 	var material = new THREE.ShaderMaterial( { 
 		  uniforms: THREE.UniformsUtils.merge( [
 		  	  THREE.UniformsLib['lights'],
 			  { 
-				color: { type: 'f', value: 0.0 },
-				hatch0: { type: 't', value: null }
+			  	hatchTextures: { type: "tv", value: null },
+				buckets: { type: 'fv1', value: buckets }
 			  }
 		  ]), 
 		  vertexShader: shaderContents.vertexShader, 
-		  fragmentShader: shaderContents.fragmentShader,  
+		  fragmentShader: "#define BUCKET_SIZE " + 
+		  				  buckets.length + " \n" + 
+		  				  shaderContents.fragmentShader,  
 		  transparent: true,
 		  lights: true
 	} );
-    material.uniforms.hatch0.value = imgTexture;
+	material.uniforms.hatchTextures.value = hatchTextures;
 
 	// var material = new THREE.MeshPhongMaterial( {
 	// 	map: imgTexture, 
