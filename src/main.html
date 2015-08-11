@@ -12,7 +12,7 @@
 			    vecNormal = (modelMatrix * vec4(normal, 0.0)).xyz;
 			    gl_Position = projectionMatrix * viewMatrix *
 			                  vec4(vecPos, 1.0);
-			 }
+			}
 		</script>
 		<script id="fragShader" type="shader">
 			precision highp float;
@@ -29,32 +29,36 @@
 			uniform float spotLightDistance[MAX_SPOT_LIGHTS];
 			 
 			void main(void) {
-
 			    // Calculating light information
 			    vec4 addedLights = vec4(0.0,0.0,0.0,1.0);
 			    for(int l = 0; l < MAX_SPOT_LIGHTS; l++) {
 			        vec3 lightDirection = normalize( vecPos - spotLightPosition[l] );
-
 			        float dotLight = dot( -lightDirection, vecNormal );
 			        addedLights.rgb += clamp( dotLight, dotLight, dotLight ) 
 			        				   * spotLightColor[l];
 			    }
-
 			    // Bucketing the colors
-			    colors
 			    vec4 textureColor;
+			    float mult;
 			    for(int c = 0; c < 3; c++ ) {
-			    	for( int i = 1; i < BUCKET_SIZE; i++ ) {
+			    	for( int i = 1; i < BUCKET_SIZE ; i++ ) {
 			    		if( addedLights[c] < buckets[i] ) {
-			    			textureColor = texture2D(hatchTextures[BUCKET_SIZE-i-1], vUv);
+			    			mult = abs(addedLights[c] - buckets[i])/(buckets[i] - buckets[i-1]);
+			    			textureColor = (1.0-mult)*texture2D(hatchTextures[BUCKET_SIZE-i-1],vUv);
+
+			    			
+			    			textureColor = textureColor + mult*texture2D(hatchTextures[BUCKET_SIZE-i],vUv);
+
 			    			addedLights[c] = buckets[i-1];
+
 			    			break;
 			    		}
+
 				    }	
 			    }
-
 			    gl_FragColor = textureColor;
 			}
+
 		</script>
 	</head>
 	<body>

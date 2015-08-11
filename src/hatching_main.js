@@ -1,4 +1,3 @@
-
 if( !Detector.webgl ) Detector.addGetWebGLMessage();
 
 var container, camera, scene, renderer, controls;
