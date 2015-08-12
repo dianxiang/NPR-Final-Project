@@ -3,6 +3,7 @@ if( !Detector.webgl ) Detector.addGetWebGLMessage();
 var container, camera, scene, renderer, controls;
 var mesh;
 var light;
+var zoomLevel;
 
 init();
 animate();
@@ -27,7 +28,7 @@ function init() {
 	// Camera position 
 	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 	camera.position.set( 0, 200, 0 );
-
+	zoomLevel = 1;
 	// Scene with objects
 	scene = new THREE.Scene();
 	
@@ -44,7 +45,7 @@ function init() {
 	
 
 	var shininess = 50, specular = 0x333333, bumpScale = 3, shading = THREE.SmoothShading;
-
+	
 	var hatchTextures = [
 		THREE.ImageUtils.loadTexture( "hatch_0.jpg" ),
 		THREE.ImageUtils.loadTexture( "hatch_1.jpg" ),
@@ -54,18 +55,56 @@ function init() {
 		THREE.ImageUtils.loadTexture( "hatch_5.jpg" )
 	]
 
-	for( var i = 0; i < hatchTextures.length; i++ ) {
-		var tex = hatchTextures[i];
+
+	var hatchTextures1 = [
+		THREE.ImageUtils.loadTexture( "hs_11.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_21.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_31.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_41.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_51.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_61.jpg" )
+	]
+	var hatchTextures2 = [
+		THREE.ImageUtils.loadTexture( "hs_12.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_22.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_32.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_42.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_52.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_62.jpg" )
+	]
+	var hatchTextures3 = [
+		THREE.ImageUtils.loadTexture( "hs_13.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_23.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_33.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_43.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_53.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_63.jpg" )
+	]
+	var hatchTextures4 = [
+		THREE.ImageUtils.loadTexture( "hs_13.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_23.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_33.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_43.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_53.jpg" ),
+		THREE.ImageUtils.loadTexture( "hs_63.jpg" )
+	]
+
+	for( var i = 0; i < hatchTextures1.length; i++ ) {
+		var tex = hatchTextures1[i];
 		tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
 	}
 
 	var buckets = [0.0, 0.2, 0.4, 0.6, 0.8, 1.1];
 
 	var material = new THREE.ShaderMaterial( { 
-		  uniforms: THREE.UniformsUtils.merge( [
+		  uniforms: THREE.UniformsUtils.merge([
 		  	  THREE.UniformsLib['lights'],
 			  { 
 			  	hatchTextures: { type: "tv", value: null },
+			  	hatchTextures1: { type: "tv", value: null },
+			  	hatchTextures2: { type: "tv", value: null },
+			  	hatchTextures3: { type: "tv", value: null },
+			  	hatchTextures4: { type: "tv", value: null },
 				buckets: { type: 'fv1', value: buckets }
 			  }
 		  ]), 
@@ -77,6 +116,10 @@ function init() {
 		  lights: true
 	} );
 	material.uniforms.hatchTextures.value = hatchTextures;
+	material.uniforms.hatchTextures1.value = hatchTextures1;
+	material.uniforms.hatchTextures2.value = hatchTextures2;
+	material.uniforms.hatchTextures3.value = hatchTextures3;
+	material.uniforms.hatchTextures4.value = hatchTextures4;
 
 	// var material = new THREE.MeshPhongMaterial( {
 	// 	map: imgTexture, 
@@ -100,6 +143,18 @@ function init() {
 }
 
 function onWindowResize() {
+	if (camera.position.y > 160){
+		zoomLevel = 1;
+	}
+	else if (camera.position.y > 120){
+		zoomLevel = 2;
+	}
+	else if (camera.position.y > 80){
+		zoomLevel = 3;
+	}
+	else {
+		zoomLevel = 4;
+	}
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize( window.innerWidth, window.innerHeight );

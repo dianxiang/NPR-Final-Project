@@ -20,8 +20,13 @@
 			varying vec2 vUv;
 			varying vec3 vecPos;
 			varying vec3 vecNormal;
-			 
-			uniform sampler2D hatchTextures[BUCKET_SIZE];
+			
+			uniform int zoomLevel;
+			uniform sampler2D hatchTextures[BUCKET_SIZE]; 
+			uniform sampler2D hatchTextures1[BUCKET_SIZE];
+			uniform sampler2D hatchTextures2[BUCKET_SIZE];
+			uniform sampler2D hatchTextures3[BUCKET_SIZE];
+			uniform sampler2D hatchTextures4[BUCKET_SIZE];
 			uniform float buckets[BUCKET_SIZE];
 			 
 			uniform vec3 spotLightColor[MAX_SPOT_LIGHTS];
@@ -44,12 +49,27 @@
 			    	for( int i = 1; i < BUCKET_SIZE ; i++ ) {
 			    		if( addedLights[c] < buckets[i] ) {
 			    			mult = abs(addedLights[c] - buckets[i])/(buckets[i] - buckets[i-1]);
-			    			textureColor = (1.0-mult)*texture2D(hatchTextures[BUCKET_SIZE-i-1],vUv);
 
-			    			
-			    			textureColor = textureColor + mult*texture2D(hatchTextures[BUCKET_SIZE-i],vUv);
+			    			if (zoomLevel == 1){
 
-			    			addedLights[c] = buckets[i-1];
+			    				textureColor = (1.0-mult)*texture2D(hatchTextures[BUCKET_SIZE-i-1],vUv);			    			
+			    				textureColor = textureColor + mult*texture2D(hatchTextures[BUCKET_SIZE-i],vUv);
+			    			}/*
+			    			else if (zoomLevel == 2){
+			    				textureColor = (1.0-mult)*texture2D(hatchTextures2[BUCKET_SIZE-i-1],vUv);			    			
+			    				textureColor = textureColor + mult*texture2D(hatchTextures2[BUCKET_SIZE-i],vUv);			    				
+			    			}
+			    			else if (zoomLevel == 3){
+			    				textureColor = (1.0-mult)*texture2D(hatchTextures3[BUCKET_SIZE-i-1],vUv);			    			
+			    				textureColor = textureColor + mult*texture2D(hatchTextures3[BUCKET_SIZE-i],vUv);				    				
+			    			}*/
+			    			else{
+			    				textureColor = (1.0-mult)*texture2D(hatchTextures[BUCKET_SIZE-i-1],vUv);			    			
+			    				textureColor = textureColor + mult*texture2D(hatchTextures[BUCKET_SIZE-i],vUv);				    				
+			    			}		    				
+			    	/*		textureColor = (1.0-mult)*texture2D(hatchTextures1[BUCKET_SIZE-i-1],vUv);			    			
+			    			textureColor = textureColor + mult*texture2D(hatchTextures1[BUCKET_SIZE-i],vUv);			    				
+			    	*/		addedLights[c] = buckets[i-1];
 
 			    			break;
 			    		}
