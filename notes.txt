@@ -1,0 +1,70 @@
+* = done
+** = has different techniques we can try if we have time 
+
+1. 3D bucketing *
+2. Static hatching
+	- Separate sections for different lightings *
+	- Blending sections for lighting *
+	- Figuring out whether we did blending right :P
+	- Separate sections for zoom levels
+	- Blending sections for zoom levels 
+	- Thresholding
+
+3. Contours ** (different ways of generating contours)
+	- Contours on the outside
+	- Contours on not just the outside, but a cartoonish look on the inside too
+
+4. Automatic Stroke Placement ** (different ways of generating strokes for texture)
+	- Draw normal non pencil lines for a texture
+	- Be able to draw "pencil sketch lines" instead of just random lines
+		- need to research up what is the best way to draw a "pencil line" for hatching. 
+	- Generate one patch of pencil sketch lines
+	- Generate a "darker" patch given a patch of pencil sketch lines
+	- Generate all lighter -> darker levels
+	- Generate all zoom level hatches
+
+5. Directional Based Hatching ** (different ways of parameterizing)
+	- figure out which technique we want to use
+	- triangle 
+	- do it :P
+
+
+6. Real time hatching scene
+7. Real time hatching scene walkthrough
+8. User interface extension tonal map creation
+9. User interface extension tonal map generation **
+10. user interface super extension selecting and texturizing
+
+
+
+======================================================================
+Papers / Notes / Implementation Details
+
+- General:
+	- mip-map levels
+		- https://graphics.ethz.ch/teaching/former/vc_master_06/Downloads/Mipmaps_1.pdf
+	- Girshick et al - direction of strokes drawn on an object can provide a strong visual cue of its shape
+- Texturing / uv coordinate spacing
+	- lapped texture parameterization
+		- lapped texture construction aligns the patches with a direction field on the surface
+	- direction field alignment 
+		- Hertzmann and Zorin
+	- magnifying an object, we would like to see more strokes appear (to maintain constant tone) as opposed to ordinary texture mapping which simply makes existing strokes larger
+		- art maps of Kelin et al : defining custom mip-map images for use by the hardware
+- 4. Automatic Stroke Placement	
+	- from light to dark, copy and add strokes
+	- from coarse to find, repeatly add strokes until mean image tone reaches tone value associated with that column (assuming this means averaging the pixels in the image)
+	- random generation of strokes - leads to clumps. Paper says to randomly place strokes and find the "best-fitting one" next stroke out of 1000 for lighter tones and 100 for dark tone images (spacing is less important here) 
+		- for this one, we might be able to experiment with different sampling techniques for distributing 
+		- paper has definition for "best fitting".
+	- stroke width is randomly set between 0.3 and 1.0 times the width of the image and 
+	- orientation of stroke has a tiny random perturbation from the mean
+	- lighter : only add horizontal strokes. for darker, add only vertical strokes. for dark dark, add both. 
+	- hatched images are toroidal to allow for tiled rendering over parameterized surfaces
+	- better: https://www.cs.utah.edu/~emilp/papers/ToneCtrlHatching.pdf
+- Blending 
+	- Bracket the continuous tone at each mesh vertex between two consecutive tone images. For each mesh face, we gather the blended textures at three vertices and spatially combine them across the face (using a barycentric sum similar to Gouraud shading). 
+	- Single pass 6-way blend
+
+
+
