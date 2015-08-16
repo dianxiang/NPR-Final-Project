@@ -14,8 +14,10 @@ HATCH_UTILITY.shaderContents = function() {
 			"varying vec3 vecPos;",
 			"varying vec3 vecWorldNormal;",
 
+			"uniform vec2 repeat;",
+
 			"void main() {",
-				"vUv = uv;",
+				"vUv = repeat * uv;",
 				"vecPos = (modelMatrix * vec4(position, 1.0 )).xyz;",
 				"vecWorldNormal = normalMatrix * normal;",
 				"gl_Position = projectionMatrix * viewMatrix *",
@@ -135,7 +137,8 @@ HATCH_UTILITY.getShaderMaterial = function( shaderContents ) {
 			  	hatchTextures2: { type: "tv", value: null },
 			  	hatchTextures3: { type: "tv", value: null },
 			  	hatchTextures4: { type: "tv", value: null },
-				buckets: { type: 'fv1', value: buckets }
+				buckets: { type: 'fv1', value: buckets },
+				repeat: { type: "v2", value: new THREE.Vector2(0, 0) }
 			  }
 		  ]), 
 		  vertexShader: hatchShaderContents.vertexShader, 
@@ -146,11 +149,25 @@ HATCH_UTILITY.getShaderMaterial = function( shaderContents ) {
 		  lights: true
 	} );
 
+	material.uniforms.repeat.value.set( 4, 4 );
 	material.uniforms.hatchTextures.value = hatchTextures;
 	material.uniforms.hatchTextures1.value = hatchTextures1;
 	material.uniforms.hatchTextures2.value = hatchTextures2;
 	material.uniforms.hatchTextures3.value = hatchTextures3;
 	material.uniforms.hatchTextures4.value = hatchTextures4;
+
+	material.uniforms.hatchTextures.value[0].wrapS = 
+		material.uniforms.hatchTextures.value[0].wrapT = THREE.RepeatWrapping;
+	material.uniforms.hatchTextures.value[1].wrapS = 
+		material.uniforms.hatchTextures.value[1].wrapT = THREE.RepeatWrapping;
+	material.uniforms.hatchTextures.value[2].wrapS = 
+		material.uniforms.hatchTextures.value[2].wrapT = THREE.RepeatWrapping;
+	material.uniforms.hatchTextures.value[3].wrapS = 
+		material.uniforms.hatchTextures.value[3].wrapT = THREE.RepeatWrapping;
+	material.uniforms.hatchTextures.value[4].wrapS = 
+		material.uniforms.hatchTextures.value[4].wrapT = THREE.RepeatWrapping;
+	material.uniforms.hatchTextures.value[5].wrapS = 
+		material.uniforms.hatchTextures.value[5].wrapT = THREE.RepeatWrapping;
 
 	return material;
 }
