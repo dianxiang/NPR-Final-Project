@@ -65,6 +65,15 @@ Papers / Notes / Implementation Details
 - Blending 
 	- Bracket the continuous tone at each mesh vertex between two consecutive tone images. For each mesh face, we gather the blended textures at three vertices and spatially combine them across the face (using a barycentric sum similar to Gouraud shading). 
 	- Single pass 6-way blend
+- 2 Contour
+	- from paper: http://www.mrl.nyu.edu/~hertzman/hertzmann-intro3d.pdf
+	- Technique 1: render a depth map and do an edge detector to the depth map
+		- does not detect boundaries at the same depth. Only detects C0 surface discontinuities
+	- Technique 2: compute a normal map for an object. detct edges in the normal map. These edges detect changes in surface orientation and can be combined with the edges fo the depth map to produce a good silhouette image. 
+	- y Curtis [5] and Corrˆea et al. [4]. Saito and Takahashi [18]
+	- edge detection filter: https://en.wikipedia.org/wiki/Sobel_operator
 
-
-
+	- silhouettes : set of meshes that connect a front facing polygon to a back facing polygon. (surface normal is perpendicular to the view vector)
+	- http://wiki.polycount.com/wiki/Normal_map
+	- http://gamedevelopment.tutsplus.com/articles/gamedev-glossary-what-is-a-normal-map--gamedev-3893
+	- http://bkcore.com/blog/3d/webgl-three-js-animated-selective-glow.html

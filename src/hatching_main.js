@@ -1,174 +1,204 @@
 if( !Detector.webgl ) Detector.addGetWebGLMessage();
 
-var container, camera, scene, renderer, controls;
-var mesh;
-var light;
-var zoomLevel;
+var camera, scene, renderer;
+var object, light;
+
+var normalRenderTarget, normalEdgeComposer, 
+	depthRenderTarget, depthEdgeComposer, 
+	testRenderTarget, testEdgeComposer,
+	finalComposer;
+
+var edgePass;
+
+var controls;
 
 init();
 animate();
 
-function loadShaderContents(contents) {
-	contents.vertexShader = document.getElementById( 'vertShader' ).textContent;
-	contents.fragmentShader = document.getElementById( 'fragShader' ).textContent;
-}
-
 function init() {
 
-	// Creating WebGL renderer
 	renderer = new THREE.WebGLRenderer();
 	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( window.innerWidth, window.innerHeight );
-	renderer.setClearColor(0xecf0f1);
+	document.body.appendChild( renderer.domElement );
 
-	// Putting it onto an HTML div
-	container = document.getElementById( 'container' );
-	container.appendChild( renderer.domElement );
+	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
+	camera.position.z = 400;
 
-	// Camera position 
-	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
-	camera.position.set( 0, 200, 0 );
-	zoomLevel = 1;
-	// Scene with objects
 	scene = new THREE.Scene();
-	
+	normalScene = new THREE.Scene();
+	depthScene = new THREE.Scene();
+
 	light = new THREE.SpotLight( 0xff0aaa, 1, 1000 );
 	light.position.set(200, 200, 0).normalize();
 	scene.add(light);
 
-	// Objects and meshes
-	// var geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 );
-	var geometry = new THREE.SphereGeometry( 5, 32, 32 );
-	// Loading shaders
-	var shaderContents = {};
-	loadShaderContents(shaderContents);
+	scene.add( new THREE.AmbientLight( 0xffffff ) );
+
+	normalRenderTarget = new THREE.WebGLRenderTarget( 
+			window.innerWidth,
+			window.innerHeight,
+			{ minFilter: THREE.LinearFilter, 
+			  magFilter: THREE.NearestFilter,
+			  format: THREE.RGBFormat } );
+
+	depthRenderTarget = new THREE.WebGLRenderTarget( 
+			window.innerWidth,
+			window.innerHeight,
+			{ minFilter: THREE.LinearFilter, 
+			  magFilter: THREE.NearestFilter,
+			  format: THREE.RGBFormat } );
+
+	var normalMaterial = new THREE.MeshNormalMaterial();
+	var depthMaterial = new THREE.MeshDepthMaterial();
+	var hatchShaderMaterial = HATCH_UTILITY.getShaderMaterial();
+
+	// Teapot object
+	var onProgress = function( xhr ) { console.log( "loading" ); }
+	var onError = function( xhr ) { alert( "FUCK, can't load this shit!" ); };
+	var loader = new THREE.OBJLoader();
+	loader.load( 'teapot/teapot.obj', function( object ) {
+		normalObject = object.clone();
+		depthObject = object.clone();
+		for( var i = 0; i < object.children.length; i++ ) {
+			object.children[i].material = hatchShaderMaterial;
+
+			normalObject.children[i].material = normalMaterial;
+			normalObject.children[i].geometry.computeVertexNormals();
+
+			depthObject.children[i].material = depthMaterial;
+			depthObject.children[i].geometry.computeVertexNormals();
+		}
+
+		scene.add( object );
+		normalScene.add( normalObject );
+		depthScene.add( depthObject );
+		
+	}, onProgress, onError );
+
+
+	// Box Geometry
+	var boxGeometry = new THREE.BoxGeometry( 50, 50, 50 );
+	var boxObj = new THREE.Mesh( boxGeometry, hatchShaderMaterial );
+	var normalBoxObj = new THREE.Mesh( boxGeometry, normalMaterial );
+	var depthBoxObj = new THREE.Mesh( boxGeometry, depthMaterial );
+
+	boxObj.position.set(150, 30, 0);
+	normalBoxObj.position.set(150, 30, 0);
+	depthBoxObj.position.set(150, 30, 0);
 	
+	scene.add( boxObj );
+	normalScene.add( normalBoxObj );
+	depthScene.add( depthBoxObj );
 
-	var shininess = 50, specular = 0x333333, bumpScale = 3, shading = THREE.SmoothShading;
+	// Torus Geometry
+	var torusGeometry = new THREE.TorusKnotGeometry( 30, 5, 100, 16 );
+	var torusObj = new THREE.Mesh( torusGeometry, hatchShaderMaterial );
+	var normalTorusObj = new THREE.Mesh( torusGeometry, normalMaterial );
+	var depthTorusObj = new THREE.Mesh( torusGeometry, depthMaterial );
+
+	torusObj.position.set(-150, 30, 0);
+	normalTorusObj.position.set(-150, 30, 0);
+	depthTorusObj.position.set(-150, 30, 0);
 	
-	var hatchTextures = [
-		THREE.ImageUtils.loadTexture( "hatch_0.jpg" ),
-		THREE.ImageUtils.loadTexture( "hatch_1.jpg" ),
-		THREE.ImageUtils.loadTexture( "hatch_2.jpg" ),
-		THREE.ImageUtils.loadTexture( "hatch_3.jpg" ),
-		THREE.ImageUtils.loadTexture( "hatch_4.jpg" ),
-		THREE.ImageUtils.loadTexture( "hatch_5.jpg" )
-	]
+	scene.add( torusObj );
+	normalScene.add( normalTorusObj );
+	depthScene.add( depthTorusObj );
+
+	// Sphere Geometry
+	var sphereGeometry = new THREE.SphereGeometry( 40, 32, 32 );
+	var sphereObj = new THREE.Mesh( sphereGeometry, hatchShaderMaterial );
+	var normalSphereObj = new THREE.Mesh( sphereGeometry, normalMaterial );
+	var depthSphereObj = new THREE.Mesh( sphereGeometry, depthMaterial );
+
+	sphereObj.position.set(0, 160, 0);
+	normalSphereObj.position.set(0, 160, 0);
+	depthSphereObj.position.set(0, 160, 0);
+	
+	scene.add( sphereObj );
+	normalScene.add( normalSphereObj );
+	depthScene.add( depthSphereObj );
 
 
-	var hatchTextures1 = [
-		THREE.ImageUtils.loadTexture( "hs_11.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_21.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_31.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_41.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_51.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_61.jpg" )
-	]
-	var hatchTextures2 = [
-		THREE.ImageUtils.loadTexture( "hs_12.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_22.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_32.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_42.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_52.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_62.jpg" )
-	]
-	var hatchTextures3 = [
-		THREE.ImageUtils.loadTexture( "hs_13.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_23.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_33.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_43.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_53.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_63.jpg" )
-	]
-	var hatchTextures4 = [
-		THREE.ImageUtils.loadTexture( "hs_13.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_23.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_33.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_43.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_53.jpg" ),
-		THREE.ImageUtils.loadTexture( "hs_63.jpg" )
-	]
+	
+	// Creating render pass to render normal, depth to a frame buffer
+	var normalRenderPass = new THREE.RenderPass( normalScene, camera );
+	var depthRenderPass = new THREE.RenderPass( depthScene, camera );
 
-	for( var i = 0; i < hatchTextures1.length; i++ ) {
-		var tex = hatchTextures1[i];
-		tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-	}
+	// Creating shader pass to pass render pass information to edge filter
+	// Edge filtering shader can be found at EdgeShader2.js
+	edgePass = new THREE.ShaderPass( THREE.EdgeShader2 );
+	var copyPass = new THREE.ShaderPass( THREE.CopyShader );
+	// Last pass renders to frame buffer rather than to internal frame buffer
+	copyPass.renderToScreen = true; 
 
-	var buckets = [0.0, 0.2, 0.4, 0.6, 0.8, 1.1];
+	// Creating normalImage -> edgeFilter -> output picture composer 
+	// Results rendered to normalRenderTarget
+	normalEdgeComposer = new THREE.EffectComposer( renderer, normalRenderTarget );
+	normalEdgeComposer.addPass( normalRenderPass );
+	normalEdgeComposer.addPass( edgePass );
+	normalEdgeComposer.addPass( copyPass );
 
-	var material = new THREE.ShaderMaterial( { 
-		  uniforms: THREE.UniformsUtils.merge([
-		  	  THREE.UniformsLib['lights'],
-			  { 
-			  	hatchTextures: { type: "tv", value: null },
-			  	hatchTextures1: { type: "tv", value: null },
-			  	hatchTextures2: { type: "tv", value: null },
-			  	hatchTextures3: { type: "tv", value: null },
-			  	hatchTextures4: { type: "tv", value: null },
-				buckets: { type: 'fv1', value: buckets }
-			  }
-		  ]), 
-		  vertexShader: shaderContents.vertexShader, 
-		  fragmentShader: "#define BUCKET_SIZE " + 
-		  				  buckets.length + " \n" + 
-		  				  shaderContents.fragmentShader,  
-		  transparent: true,
-		  lights: true
-	} );
-	material.uniforms.hatchTextures.value = hatchTextures;
-	material.uniforms.hatchTextures1.value = hatchTextures1;
-	material.uniforms.hatchTextures2.value = hatchTextures2;
-	material.uniforms.hatchTextures3.value = hatchTextures3;
-	material.uniforms.hatchTextures4.value = hatchTextures4;
+	// Creating depthImage -> edgeFilter -> output picture composer
+	depthEdgeComposer = new THREE.EffectComposer( renderer, depthRenderTarget );
+	depthEdgeComposer.addPass( depthRenderPass );
+	depthEdgeComposer.addPass( edgePass );
+	depthEdgeComposer.addPass( copyPass );
 
-	// var material = new THREE.MeshPhongMaterial( {
-	// 	map: imgTexture, 
-	// 	bumpMap: imgTexture,
-	// 	bumpScale: bumpScale, 
-	// 	// color: 0x00ff00, 
-	// 	specular: specular, 
-	// 	shininess: shininess,
-	// 	shading: shading } );
+	// Test render pass to view intermediate results
+	// This one views what the normal pass looks like
+	var testRenderPass = new THREE.RenderPass( normalScene, camera );
+	testEdgeComposer = new THREE.EffectComposer( renderer, testRenderTarget );
+	testEdgeComposer.addPass( testRenderPass );
+	testEdgeComposer.addPass( copyPass );
 
-	mesh = new THREE.Mesh( geometry, material );
-	scene.add( mesh );
+	// Creating render pass with hatching scene material
+	var renderModel = new THREE.RenderPass( scene, camera );
+	renderModel.renderToScreen = true;
 
+	// Creating shader pass that blends all three together
+	// Blend shader can be found at src/edgeBlendShader.js
+	var edgesModelBlendPass = new THREE.ShaderPass( THREE.EdgeBlendShader );
+	edgesModelBlendPass.renderToScreen = true;
+	// 
+	edgesModelBlendPass.uniforms[ "tNormalEdge" ].value = normalEdgeComposer.renderTarget1;
+	edgesModelBlendPass.uniforms[ "tDepthEdge" ].value = depthEdgeComposer.renderTarget1;
+	edgesModelBlendPass.uniforms[ "tTestEdge" ].value = testEdgeComposer.renderTarget2;
 
-	// Rotation controls
+	// Renders the hatch scene, then uses tNormalEdge, tDepthEdge 
+	// and the rendered scene to compose the final scene.
+	finalComposer = new THREE.EffectComposer( renderer );
+	finalComposer.addPass( renderModel );
+	finalComposer.addPass( edgesModelBlendPass );
+
+	// Creating rotating controls
 	controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-	// event listener
 	window.addEventListener( 'resize', onWindowResize, false );
 
 }
 
 function onWindowResize() {
-	if (camera.position.y > 160){
-		zoomLevel = 1;
-	}
-	else if (camera.position.y > 120){
-		zoomLevel = 2;
-	}
-	else if (camera.position.y > 80){
-		zoomLevel = 3;
-	}
-	else {
-		zoomLevel = 4;
-	}
+	// There's a bug in window resize where things are pixellated :( but ignore :P
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize( window.innerWidth, window.innerHeight );
+
+	edgePass.uniforms[ 'aspect' ].value.x = window.innerWidth;
+	edgePass.uniforms[ 'aspect' ].value.y = window.innerHeight;
 }
 
 function animate() {
 	requestAnimationFrame( animate );
-	render();
-}
 
-function render() {
 	var timer = Date.now() * 0.00025;
 	light.position.x = Math.sin( timer * 7 ) * 300;
 	light.position.y = Math.cos( timer * 5 ) * 300;
 	light.position.z = Math.cos( timer * 3 ) * 300;
-	renderer.render( scene, camera );
+
+	renderer.setClearColor(0xffffff);
+	normalEdgeComposer.render( 0.1 );
+	depthEdgeComposer.render( 0.1 );
+	testEdgeComposer.render( 0.1 );
+	finalComposer.render();
 }
