@@ -65,15 +65,20 @@ HATCH_UTILITY.shaderContents = function() {
 				"float luminosity = (addedLights.r + addedLights.g + addedLights.b) / 3.0;",
 
 			    "if( luminosity < buckets[0] ) { ",
-			    "	textureColor = texture2D( hatchShade4, vUv );",
+			    "	float mult = abs(buckets[1] - luminosity)/(buckets[1] - buckets[0]);",
+			    "	textureColor = texture2D( hatchShade4, vUv ) * mult + texture2D( hatchShade3, vUv ) * mult;",
 			    "} else if( luminosity < buckets[1] ) { ",
-			    "	textureColor = texture2D( hatchShade3, vUv );",
+			    "	float mult = abs(buckets[2] - luminosity)/(buckets[2] - buckets[1]);",
+			    "	textureColor = texture2D( hatchShade3, vUv ) * mult + texture2D( hatchShade2, vUv ) * mult;",
 			    "} else if( luminosity < buckets[2] ) { ",
-			    "	textureColor = texture2D( hatchShade2, vUv );",
+			    "	float mult = abs(buckets[3] - luminosity)/(buckets[3] - buckets[2]);",
+			    "	textureColor = texture2D( hatchShade2, vUv ) * mult + texture2D( hatchShade1, vUv ) * mult;",
 			    "} else if( luminosity < buckets[3] ) { ",
-			    "	textureColor = texture2D( hatchShade1, vUv );",
+			    "	float mult = abs(buckets[4] - luminosity)/(buckets[4] - buckets[3]);",
+			    "	textureColor = texture2D( hatchShade1, vUv ) * mult + texture2D( hatchShade, vUv ) * mult;",
 			    "} else { ",
-			    "	textureColor = texture2D( hatchShade, vUv );",
+			    "	float mult = abs(1.0 - luminosity)/(1.0 - buckets[4]);",
+			    "	textureColor = vec4(0.1, 0.1, 0.1, 1.0);",
 			    "}",
 
 			    // "for(int c = 0; c < 3; c++ ) {",
@@ -159,7 +164,7 @@ HATCH_UTILITY.getShaderMaterial = function( shaderContents ) {
 	// 	tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
 	// }
 
-	var buckets = [0.0, 0.2, 0.4, 0.6, 0.8, 1.1];
+	var buckets = [0.2, 0.4, 0.6, 0.8, 1.1];
 	var hatchShaderContents = HATCH_UTILITY.shaderContents();
 
 	var material = new THREE.ShaderMaterial( { 
@@ -183,11 +188,11 @@ HATCH_UTILITY.getShaderMaterial = function( shaderContents ) {
 		  lights: true
 	} );
 
-	var hatchShadeCanvas = HATCH_UTILITY.generateMipMap( 256, "#fff" );
-	var hatchShadeCanvas1 = HATCH_UTILITY.generateMipMap( 256, "#ddd" );
-	var hatchShadeCanvas2 = HATCH_UTILITY.generateMipMap( 256, "#aaa" );
-	var hatchShadeCanvas3 = HATCH_UTILITY.generateMipMap( 256, "#666" );
-	var hatchShadeCanvas4 = HATCH_UTILITY.generateMipMap( 256, "#222" );
+	var hatchShadeCanvas = HATCH_UTILITY.generateMipMap( 64, "#000" );
+	var hatchShadeCanvas1 = HATCH_UTILITY.generateMipMap( 64, "#f00" );
+	var hatchShadeCanvas2 = HATCH_UTILITY.generateMipMap( 64, "#0f0" );
+	var hatchShadeCanvas3 = HATCH_UTILITY.generateMipMap( 64, "#00f" );
+	var hatchShadeCanvas4 = HATCH_UTILITY.generateMipMap( 64, "#0ff" );
 
 	var hatchShadeTexture =  new THREE.Texture( hatchShadeCanvas, 
 		THREE.UVMapping, 
@@ -221,54 +226,44 @@ HATCH_UTILITY.getShaderMaterial = function( shaderContents ) {
 		THREE.LinearMipMapLinearFilter );
 
 	hatchShadeTexture.mipmaps[0] = hatchShadeCanvas;
-	hatchShadeTexture.mipmaps[1] = HATCH_UTILITY.generateMipMap( 128, "#ff0000" );
-	hatchShadeTexture.mipmaps[2] = HATCH_UTILITY.generateMipMap( 64, "#00ff00" );
-	hatchShadeTexture.mipmaps[3] = HATCH_UTILITY.generateMipMap( 32, "#0000ff" );
-	hatchShadeTexture.mipmaps[4] = HATCH_UTILITY.generateMipMap( 16, "#0000ff" );
-	hatchShadeTexture.mipmaps[5] = HATCH_UTILITY.generateMipMap( 8, "#0000ff" );
-	hatchShadeTexture.mipmaps[6] = HATCH_UTILITY.generateMipMap( 4, "#0000ff" );
-	hatchShadeTexture.mipmaps[7] = HATCH_UTILITY.generateMipMap( 2, "#0000ff" );
-	hatchShadeTexture.mipmaps[8] = HATCH_UTILITY.generateMipMap( 1, "#0000ff" );
+	hatchShadeTexture.mipmaps[1] = HATCH_UTILITY.generateMipMap( 32, "#ff0000" );
+	hatchShadeTexture.mipmaps[2] = HATCH_UTILITY.generateMipMap( 16, "#00ff00" );
+	hatchShadeTexture.mipmaps[3] = HATCH_UTILITY.generateMipMap( 8, "#0000ff" );
+	hatchShadeTexture.mipmaps[4] = HATCH_UTILITY.generateMipMap( 4, "#00ffff" );
+	hatchShadeTexture.mipmaps[5] = HATCH_UTILITY.generateMipMap( 2, "#ff00ff" );
+	hatchShadeTexture.mipmaps[6] = HATCH_UTILITY.generateMipMap( 1, "#ffff00" );
 
 	hatchShadeTexture1.mipmaps[0] = hatchShadeCanvas1;
-	hatchShadeTexture1.mipmaps[1] = HATCH_UTILITY.generateMipMap( 128, "#dd0000" );
-	hatchShadeTexture1.mipmaps[2] = HATCH_UTILITY.generateMipMap( 64, "#00dd00" );
-	hatchShadeTexture1.mipmaps[3] = HATCH_UTILITY.generateMipMap( 32, "#0000dd" );
-	hatchShadeTexture1.mipmaps[4] = HATCH_UTILITY.generateMipMap( 16, "#0000dd" );
-	hatchShadeTexture1.mipmaps[5] = HATCH_UTILITY.generateMipMap( 8, "#0000dd" );
-	hatchShadeTexture1.mipmaps[6] = HATCH_UTILITY.generateMipMap( 4, "#0000dd" );
-	hatchShadeTexture1.mipmaps[7] = HATCH_UTILITY.generateMipMap( 2, "#0000dd" );
-	hatchShadeTexture1.mipmaps[8] = HATCH_UTILITY.generateMipMap( 1, "#0000dd" );
+	hatchShadeTexture1.mipmaps[1] = HATCH_UTILITY.generateMipMap( 32, "#ff0000" );
+	hatchShadeTexture1.mipmaps[2] = HATCH_UTILITY.generateMipMap( 16, "#00ff00" );
+	hatchShadeTexture1.mipmaps[3] = HATCH_UTILITY.generateMipMap( 8, "#0000ff" );
+	hatchShadeTexture1.mipmaps[4] = HATCH_UTILITY.generateMipMap( 4, "#00ffff" );
+	hatchShadeTexture1.mipmaps[5] = HATCH_UTILITY.generateMipMap( 2, "#ff00ff" );
+	hatchShadeTexture1.mipmaps[6] = HATCH_UTILITY.generateMipMap( 1, "#ffff00" );
 
 	hatchShadeTexture2.mipmaps[0] = hatchShadeCanvas2;
-	hatchShadeTexture2.mipmaps[1] = HATCH_UTILITY.generateMipMap( 128, "#aa0000" );
-	hatchShadeTexture2.mipmaps[2] = HATCH_UTILITY.generateMipMap( 64, "#00aa00" );
-	hatchShadeTexture2.mipmaps[3] = HATCH_UTILITY.generateMipMap( 32, "#0000aa" );
-	hatchShadeTexture2.mipmaps[4] = HATCH_UTILITY.generateMipMap( 16, "#0000aa" );
-	hatchShadeTexture2.mipmaps[5] = HATCH_UTILITY.generateMipMap( 8, "#0000aa" );
-	hatchShadeTexture2.mipmaps[6] = HATCH_UTILITY.generateMipMap( 4, "#0000aa" );
-	hatchShadeTexture2.mipmaps[7] = HATCH_UTILITY.generateMipMap( 2, "#0000aa" );
-	hatchShadeTexture2.mipmaps[8] = HATCH_UTILITY.generateMipMap( 1, "#0000aa" );
+	hatchShadeTexture2.mipmaps[1] = HATCH_UTILITY.generateMipMap( 32, "#ff0000" );
+	hatchShadeTexture2.mipmaps[2] = HATCH_UTILITY.generateMipMap( 16, "#00ff00" );
+	hatchShadeTexture2.mipmaps[3] = HATCH_UTILITY.generateMipMap( 8, "#0000ff" );
+	hatchShadeTexture2.mipmaps[4] = HATCH_UTILITY.generateMipMap( 4, "#00ffff" );
+	hatchShadeTexture2.mipmaps[5] = HATCH_UTILITY.generateMipMap( 2, "#ff00ff" );
+	hatchShadeTexture2.mipmaps[6] = HATCH_UTILITY.generateMipMap( 1, "#ffff00" );
 
 	hatchShadeTexture3.mipmaps[0] = hatchShadeCanvas3;
-	hatchShadeTexture3.mipmaps[1] = HATCH_UTILITY.generateMipMap( 128, "#660000" );
-	hatchShadeTexture3.mipmaps[2] = HATCH_UTILITY.generateMipMap( 64, "#006600" );
-	hatchShadeTexture3.mipmaps[3] = HATCH_UTILITY.generateMipMap( 32, "#000066" );
-	hatchShadeTexture3.mipmaps[4] = HATCH_UTILITY.generateMipMap( 16, "#000066" );
-	hatchShadeTexture3.mipmaps[5] = HATCH_UTILITY.generateMipMap( 8, "#000066" );
-	hatchShadeTexture3.mipmaps[6] = HATCH_UTILITY.generateMipMap( 4, "#000066" );
-	hatchShadeTexture3.mipmaps[7] = HATCH_UTILITY.generateMipMap( 2, "#000066" );
-	hatchShadeTexture3.mipmaps[8] = HATCH_UTILITY.generateMipMap( 1, "#000066" );
+	hatchShadeTexture3.mipmaps[1] = HATCH_UTILITY.generateMipMap( 32, "#ff0000" );
+	hatchShadeTexture3.mipmaps[2] = HATCH_UTILITY.generateMipMap( 16, "#00ff00" );
+	hatchShadeTexture3.mipmaps[3] = HATCH_UTILITY.generateMipMap( 8, "#0000ff" );
+	hatchShadeTexture3.mipmaps[4] = HATCH_UTILITY.generateMipMap( 4, "#00ffff" );
+	hatchShadeTexture3.mipmaps[5] = HATCH_UTILITY.generateMipMap( 2, "#ff00ff" );
+	hatchShadeTexture3.mipmaps[6] = HATCH_UTILITY.generateMipMap( 1, "#ffff00" );
 
 	hatchShadeTexture4.mipmaps[0] = hatchShadeCanvas4;
-	hatchShadeTexture4.mipmaps[1] = HATCH_UTILITY.generateMipMap( 128, "#220000" );
-	hatchShadeTexture4.mipmaps[2] = HATCH_UTILITY.generateMipMap( 64, "#002200" );
-	hatchShadeTexture4.mipmaps[3] = HATCH_UTILITY.generateMipMap( 32, "#000022" );
-	hatchShadeTexture4.mipmaps[4] = HATCH_UTILITY.generateMipMap( 16, "#000022" );
-	hatchShadeTexture4.mipmaps[5] = HATCH_UTILITY.generateMipMap( 8, "#000022" );
-	hatchShadeTexture4.mipmaps[6] = HATCH_UTILITY.generateMipMap( 4, "#000022" );
-	hatchShadeTexture4.mipmaps[7] = HATCH_UTILITY.generateMipMap( 2, "#000022" );
-	hatchShadeTexture4.mipmaps[8] = HATCH_UTILITY.generateMipMap( 1, "#000022" );
+	hatchShadeTexture4.mipmaps[1] = HATCH_UTILITY.generateMipMap( 32, "#ff0000" );
+	hatchShadeTexture4.mipmaps[2] = HATCH_UTILITY.generateMipMap( 16, "#00ff00" );
+	hatchShadeTexture4.mipmaps[3] = HATCH_UTILITY.generateMipMap( 8, "#0000ff" );
+	hatchShadeTexture4.mipmaps[4] = HATCH_UTILITY.generateMipMap( 4, "#00ffff" );
+	hatchShadeTexture4.mipmaps[5] = HATCH_UTILITY.generateMipMap( 2, "#ff00ff" );
+	hatchShadeTexture4.mipmaps[6] = HATCH_UTILITY.generateMipMap( 1, "#ffff00" );
 
 	material.uniforms.repeat.value.set( 10, 10 );
 	material.uniforms.hatchShade.value = hatchShadeTexture;

@@ -63,7 +63,8 @@ function init() {
 		for( var i = 0; i < object.children.length; i++ ) {
 			// object.rotation.x = -90;
 			object.children[i].material = hatchShaderMaterial;
-
+			object.children[i].geometry.computeVertexNormals();
+			
 			normalObject.children[i].material = normalMaterial;
 			normalObject.children[i].geometry.computeVertexNormals();
 
