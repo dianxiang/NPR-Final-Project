@@ -10,6 +10,9 @@ var normalRenderTarget, normalEdgeComposer,
 
 var edgePass;
 
+var hatchShaderMaterial, normalMaterial, depthMaterial;
+var loader, onProgress, onError;
+
 var controls;
 
 init();
@@ -28,6 +31,7 @@ function init() {
 	scene = new THREE.Scene();
 	normalScene = new THREE.Scene();
 	depthScene = new THREE.Scene();
+
 
 	light = new THREE.SpotLight( 0xff0aaa, 1, 1000 );
 	light.position.set(200, 200, 0).normalize();
@@ -48,15 +52,16 @@ function init() {
 			{ minFilter: THREE.LinearFilter, 
 			  magFilter: THREE.NearestFilter,
 			  format: THREE.RGBFormat } );
+	var zoomLevel = 3.0;
 
-	var normalMaterial = new THREE.MeshNormalMaterial();
-	var depthMaterial = new THREE.MeshDepthMaterial();
-	var hatchShaderMaterial = HATCH_UTILITY.getShaderMaterial();
+	normalMaterial = new THREE.MeshNormalMaterial();
+	depthMaterial = new THREE.MeshDepthMaterial();
+	hatchShaderMaterial = HATCH_UTILITY.getShaderMaterial(zoomLevel);
 
 	// Teapot object
-	var onProgress = function( xhr ) { console.log( "loading" ); }
-	var onError = function( xhr ) { alert( "FUCK, can't load this shit!" ); };
-	var loader = new THREE.OBJLoader();
+	onProgress = function( xhr ) { console.log( "loading" ); }
+	onError = function( xhr ) { alert( "FUCK, can't load this shit!" ); };
+	loader = new THREE.OBJLoader();
 	loader.load( 'teapot/teapot.obj', function( object ) {
 		normalObject = object.clone();
 		depthObject = object.clone();
@@ -195,6 +200,7 @@ function animate() {
 	light.position.x = Math.sin( timer * 7 ) * 300;
 	light.position.y = Math.cos( timer * 5 ) * 300;
 	light.position.z = Math.cos( timer * 3 ) * 300;
+
 
 	renderer.setClearColor(0xffffff);
 	normalEdgeComposer.render( 0.1 );
