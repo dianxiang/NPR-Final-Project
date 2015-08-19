@@ -6,13 +6,13 @@
 	- Separate sections for different lightings *
 	- Blending sections for lighting *
 	- Figuring out whether we did blending right :P
-	- Separate sections for zoom levels
-	- Blending sections for zoom levels 
+	- Separate sections for zoom levels *
+	- Blending sections for zoom levels *
 	- Thresholding
 
-3. Contours ** (different ways of generating contours)
-	- Contours on the outside
-	- Contours on not just the outside, but a cartoonish look on the inside too
+3. Contours ** (different ways of generating contours) *
+	- Contours on the outside *
+	- Contours on not just the outside, but a cartoonish look on the inside too *
 
 4. Automatic Stroke Placement ** (different ways of generating strokes for texture)
 	- Draw normal non pencil lines for a texture

@@ -25,7 +25,7 @@ function init() {
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	document.body.appendChild( renderer.domElement );
 
-	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
+	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100000 );
 	camera.position.z = 400;
 
 	scene = new THREE.Scene();
@@ -66,8 +66,10 @@ function init() {
 		normalObject = object.clone();
 		depthObject = object.clone();
 		for( var i = 0; i < object.children.length; i++ ) {
+			// object.rotation.x = -90;
 			object.children[i].material = hatchShaderMaterial;
-
+			object.children[i].geometry.computeVertexNormals();
+			
 			normalObject.children[i].material = normalMaterial;
 			normalObject.children[i].geometry.computeVertexNormals();
 
@@ -82,47 +84,47 @@ function init() {
 	}, onProgress, onError );
 
 
-	// Box Geometry
-	var boxGeometry = new THREE.BoxGeometry( 50, 50, 50 );
-	var boxObj = new THREE.Mesh( boxGeometry, hatchShaderMaterial );
-	var normalBoxObj = new THREE.Mesh( boxGeometry, normalMaterial );
-	var depthBoxObj = new THREE.Mesh( boxGeometry, depthMaterial );
+	// // Box Geometry
+	// var boxGeometry = new THREE.BoxGeometry( 50, 50, 50 );
+	// var boxObj = new THREE.Mesh( boxGeometry, hatchShaderMaterial );
+	// var normalBoxObj = new THREE.Mesh( boxGeometry, normalMaterial );
+	// var depthBoxObj = new THREE.Mesh( boxGeometry, depthMaterial );
 
-	boxObj.position.set(150, 30, 0);
-	normalBoxObj.position.set(150, 30, 0);
-	depthBoxObj.position.set(150, 30, 0);
+	// boxObj.position.set(150, 30, 0);
+	// normalBoxObj.position.set(150, 30, 0);
+	// depthBoxObj.position.set(150, 30, 0);
 	
-	scene.add( boxObj );
-	normalScene.add( normalBoxObj );
-	depthScene.add( depthBoxObj );
+	// scene.add( boxObj );
+	// normalScene.add( normalBoxObj );
+	// depthScene.add( depthBoxObj );
 
-	// Torus Geometry
-	var torusGeometry = new THREE.TorusKnotGeometry( 30, 5, 100, 16 );
-	var torusObj = new THREE.Mesh( torusGeometry, hatchShaderMaterial );
-	var normalTorusObj = new THREE.Mesh( torusGeometry, normalMaterial );
-	var depthTorusObj = new THREE.Mesh( torusGeometry, depthMaterial );
+	// // Torus Geometry
+	// var torusGeometry = new THREE.TorusKnotGeometry( 30, 5, 100, 16 );
+	// var torusObj = new THREE.Mesh( torusGeometry, hatchShaderMaterial );
+	// var normalTorusObj = new THREE.Mesh( torusGeometry, normalMaterial );
+	// var depthTorusObj = new THREE.Mesh( torusGeometry, depthMaterial );
 
-	torusObj.position.set(-150, 30, 0);
-	normalTorusObj.position.set(-150, 30, 0);
-	depthTorusObj.position.set(-150, 30, 0);
+	// torusObj.position.set(-150, 30, 0);
+	// normalTorusObj.position.set(-150, 30, 0);
+	// depthTorusObj.position.set(-150, 30, 0);
 	
-	scene.add( torusObj );
-	normalScene.add( normalTorusObj );
-	depthScene.add( depthTorusObj );
+	// scene.add( torusObj );
+	// normalScene.add( normalTorusObj );
+	// depthScene.add( depthTorusObj );
 
-	// Sphere Geometry
-	var sphereGeometry = new THREE.SphereGeometry( 40, 32, 32 );
-	var sphereObj = new THREE.Mesh( sphereGeometry, hatchShaderMaterial );
-	var normalSphereObj = new THREE.Mesh( sphereGeometry, normalMaterial );
-	var depthSphereObj = new THREE.Mesh( sphereGeometry, depthMaterial );
+	// // Sphere Geometry
+	// var sphereGeometry = new THREE.SphereGeometry( 40, 32, 32 );
+	// var sphereObj = new THREE.Mesh( sphereGeometry, hatchShaderMaterial );
+	// var normalSphereObj = new THREE.Mesh( sphereGeometry, normalMaterial );
+	// var depthSphereObj = new THREE.Mesh( sphereGeometry, depthMaterial );
 
-	sphereObj.position.set(0, 160, 0);
-	normalSphereObj.position.set(0, 160, 0);
-	depthSphereObj.position.set(0, 160, 0);
+	// sphereObj.position.set(0, 160, 0);
+	// normalSphereObj.position.set(0, 160, 0);
+	// depthSphereObj.position.set(0, 160, 0);
 	
-	scene.add( sphereObj );
-	normalScene.add( normalSphereObj );
-	depthScene.add( depthSphereObj );
+	// scene.add( sphereObj );
+	// normalScene.add( normalSphereObj );
+	// depthScene.add( depthSphereObj );
 
 
 	
@@ -207,4 +209,5 @@ function animate() {
 	depthEdgeComposer.render( 0.1 );
 	testEdgeComposer.render( 0.1 );
 	finalComposer.render();
+	// renderer.render( scene, camera );
 }

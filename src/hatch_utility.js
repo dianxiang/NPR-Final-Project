@@ -32,14 +32,13 @@ HATCH_UTILITY.shaderContents = function() {
 			"varying vec3 vecPos;",
 			"varying vec3 vecWorldNormal;",
 
-			"uniform float zoomLevel;",
-			"uniform sampler2D shade1;",
-			"uniform sampler2D shade2;",
-			"uniform sampler2D shade3;",
-			"uniform sampler2D shade4;",
-			"uniform sampler2D shade5;",
-			"uniform sampler2D shade6;",
-			"uniform sampler2D edges;",
+
+			"uniform sampler2D hatchShade; ",
+			"uniform sampler2D hatchShade1;",
+			"uniform sampler2D hatchShade2;",
+			"uniform sampler2D hatchShade3;",
+			"uniform sampler2D hatchShade4;",
+
 			"uniform float buckets[BUCKET_SIZE];",
 
 			"uniform vec3 spotLightColor[MAX_SPOT_LIGHTS];",
@@ -60,138 +59,128 @@ HATCH_UTILITY.shaderContents = function() {
 			    "// Bucketing the colors",
 			    "vec4 textureColor;",
 			    "float mult;",
-			    "for(int c = 0; c < 3; c++ ) {",
-			    	"for( int i = 1; i < BUCKET_SIZE ; i++ ) {",
-			    		"if( addedLights[c] < buckets[i] ) {",
-			    			"mult = 1.0 - abs(addedLights[c] - buckets[i])/(buckets[i] - buckets[i-1]);",
-			    			"if (i == 1){",
-			    				"textureColor = (1.0-mult)*texture2D(shade6,vUv);",
-		    					"textureColor = textureColor + mult*texture2D(shade5,vUv);",	
-			    			"}",
-			    			"else if (i == 2){",
-			    				"textureColor = (1.0-mult)*texture2D(shade5,vUv);",
-		    					"textureColor = textureColor + mult*texture2D(shade4,vUv);",				    				
-			    			"}",
-			    			"else if (i == 3){",
-			    				"textureColor = (1.0-mult)*texture2D(shade4,vUv);",
-		    					"textureColor = textureColor + mult*texture2D(shade3,vUv);",	
-			    			"}",
-			    			"else if (i == 4){",
-			    				"textureColor = (1.0-mult)*texture2D(shade3,vUv);",
-		    					"textureColor = textureColor + mult*texture2D(shade2,vUv);",				    				
-			    			"}",
-			    			"else if (i == 5){",
-			    				"textureColor = (1.0-mult)*texture2D(shade2,vUv);",
-		    					"textureColor = textureColor + mult*texture2D(shade1,vUv);",				    				
-			    			"}",
-			    			"else{",
-			    				"textureColor = (1.0-mult)*texture2D(shade1,vUv);",
-		    					"textureColor = textureColor + mult*texture2D(shade1,vUv);",				    				
-			    			"}",			    				    				
-		    				"addedLights[c] = buckets[i-1];",	    				
-			    			"break;",
-			    		"}",
 
-				    "}	",
+
+			    //  More realistic luminosity calculation
+			    // "float luminosity = 0.21 * addedLights.r + ", 
+			    // 				   "0.72 * addedLights.g + ",
+			    // 				   "0.07 * addedLights.b; ",
+				"float luminosity = (addedLights.r + addedLights.g + addedLights.b) / 3.0;",
+
+			    "if( luminosity < buckets[0] ) { ",
+			    "	float mult = abs(buckets[1] - luminosity)/(buckets[1] - buckets[0]);",
+			    "	textureColor = texture2D( hatchShade4, vUv ) * mult + texture2D( hatchShade3, vUv ) * mult;",
+			    "} else if( luminosity < buckets[1] ) { ",
+			    "	float mult = abs(buckets[2] - luminosity)/(buckets[2] - buckets[1]);",
+			    "	textureColor = texture2D( hatchShade3, vUv ) * mult + texture2D( hatchShade2, vUv ) * mult;",
+			    "} else if( luminosity < buckets[2] ) { ",
+			    "	float mult = abs(buckets[3] - luminosity)/(buckets[3] - buckets[2]);",
+			    "	textureColor = texture2D( hatchShade2, vUv ) * mult + texture2D( hatchShade1, vUv ) * mult;",
+			    "} else if( luminosity < buckets[3] ) { ",
+			    "	float mult = abs(buckets[4] - luminosity)/(buckets[4] - buckets[3]);",
+			    "	textureColor = texture2D( hatchShade1, vUv ) * mult + texture2D( hatchShade, vUv ) * mult;",
+			    "} else { ",
+			    "	float mult = abs(1.0 - luminosity)/(1.0 - buckets[4]);",
+			    "	textureColor = vec4(0.1, 0.1, 0.1, 1.0);",
 			    "}",
 
+			    // "for(int c = 0; c < 3; c++ ) {",
+			    // 	"for( int i = 1; i < BUCKET_SIZE ; i++ ) {",
+			    // 		"if( addedLights[c] < buckets[i] ) {",
+			    // 			"mult = abs(addedLights[c] - buckets[i])/(buckets[i] - buckets[i-1]);",
+		    	// 			"textureColor = (1.0-mult)*texture2D(hatchShade[BUCKET_SIZE-i-1],vUv);",
+		    	// 			"textureColor = textureColor + mult*texture2D(hatchShade[BUCKET_SIZE-i],vUv);",
+			    // 			"break;",
+			    // 		"}",
+
+				   //  "}	",
+			    // "}",
 			    "gl_FragColor = textureColor;",
+			    // "gl_FragColor = vec4(luminosity, 0.0, 0.0, 1.0);",
 			"}"
 		].join('\n')
 	}
 }
 
-HATCH_UTILITY.getShaderMaterial = function(zoomLevel) {
 
+HATCH_UTILITY.generateMipMap = function( size, color ) {
 
-	var shade1 = THREE.ImageUtils.loadTexture("hs_14.jpg");
-/*	shade1.generateMipmaps = false;
-	shade1.minFilter = THREE.LinearFilter;
-	shade1.magFilter = THREE.LinearFilter;
-*/	var shade2 = THREE.ImageUtils.loadTexture("hs_24.jpg");
-	var shade3 = THREE.ImageUtils.loadTexture("hs_34.jpg");
-	var shade4 = THREE.ImageUtils.loadTexture("hs_44.jpg");
-	var shade5 = THREE.ImageUtils.loadTexture("hs_54.jpg");
-	var shade6 = THREE.ImageUtils.loadTexture("hs_64.jpg");
-/*
-	var shade1 = THREE.ImageUtils.loadTexture("hatch_1.jpg");
-	var shade2 = THREE.ImageUtils.loadTexture("hatch_2.jpg");
-	var shade3 = THREE.ImageUtils.loadTexture("hatch_3.jpg");
-	var shade4 = THREE.ImageUtils.loadTexture("hatch_4.jpg");
-	var shade5 = THREE.ImageUtils.loadTexture("hatch_5.jpg");
-	var shade6 = THREE.ImageUtils.loadTexture("hatch_6.jpg");	
-*/
-	function mipmap(name,size){
-		var c = document.createElement("canvas");
-		var context = c.getContext("2d");
-		var img = new Image();
-		img.src = name;
-		img.alt = 'alt';
-		document.body.appendChild(img);
-		var pat=context.createPattern(img,"repeat");
-		context.rect(0,0,size,size);
-		context.fillStyle = pat;
-		context.fill();		
-		return c;
-	}
+	var imageCanvas = document.createElement( "canvas" );
+	var context = imageCanvas.getContext( "2d" );
 
+	imageCanvas.width = imageCanvas.height = size;
 
-	shade1.mipmaps[ 0 ] = mipmap('hs_11.jpg',32);
-//	shade1.mipmaps[ 1 ] = mipmap( 'hs_12.jpg' );
-//	shade1.mipmaps[ 2 ] = mipmap( 'hs_13.jpg' );
-//	shade1.mipmaps[ 3 ] = mipmap( 'hs_14.jpg' );
+	context.fillStyle = "#444";
+	context.fillRect( 0, 0, size, size );
 
+	context.fillStyle = color;
+	context.fillRect( 0, 0, size, size );
+	// context.fillRect( size / 2, size / 2, size / 2, size / 2 );
+
+	return imageCanvas;
+}
+
+HATCH_UTILITY.getShaderMaterial = function( shaderContents ) {
+	// var hatchTextures = [
+	// 	THREE.ImageUtils.loadTexture( "hatch_0.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hatch_1.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hatch_2.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hatch_3.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hatch_4.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hatch_5.jpg" )
+	// ]
 	
-	shade2.mipmaps[ 0 ] = mipmap( 'hs_21.jpg' ,32);
-//	shade2.mipmaps[ 1 ] = mipmap( 'hs_22.jpg' );
-//	shade2.mipmaps[ 2 ] = mipmap( 'hs_23.jpg' );
-//	shade2.mipmaps[ 3 ] = mipmap( 'hs_24.jpg' );
+	// var hatchTextures1 = [
+	// 	THREE.ImageUtils.loadTexture( "hs_11.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_21.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_31.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_41.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_51.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_61.jpg" )
+	// ]
+	// var hatchTextures2 = [
+	// 	THREE.ImageUtils.loadTexture( "hs_12.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_22.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_32.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_42.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_52.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_62.jpg" )
+	// ]
+	// var hatchTextures3 = [
+	// 	THREE.ImageUtils.loadTexture( "hs_13.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_23.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_33.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_43.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_53.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_63.jpg" )
+	// ]
+	// var hatchTextures4 = [
+	// 	THREE.ImageUtils.loadTexture( "hs_13.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_23.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_33.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_43.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_53.jpg" ),
+	// 	THREE.ImageUtils.loadTexture( "hs_63.jpg" )
+	// ]
 
-	
-	shade3.mipmaps[ 0 ] = mipmap( 'hs_31.jpg',32 );
-//	shade3.mipmaps[ 1 ] = mipmap( 'hs_32.jpg' );
-//	shade3.mipmaps[ 2 ] = mipmap( 'hs_33.jpg' );
-//	shade3.mipmaps[ 3 ] = mipmap( 'hs_34.jpg' );
+	// for( var i = 0; i < hatchTextures1.length; i++ ) {
+	// 	var tex = hatchTextures1[i];
+	// 	tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+	// }
 
-	
-	shade4.mipmaps[ 0 ] = mipmap( 'hs_41.jpg',32 );
-//	shade4.mipmaps[ 1 ] = mipmap( 'hs_42.jpg' );
-//	shade4.mipmaps[ 2 ] = mipmap( 'hs_43.jpg' );
-//	shade4.mipmaps[ 3 ] = mipmap( 'hs_44.jpg' );
+	var buckets = [0.2, 0.4, 0.6, 0.8, 1.1];
 
-	
-	shade5.mipmaps[ 0 ] = mipmap( 'hs_51.jpg' ,32);
-//	shade5.mipmaps[ 1 ] = mipmap( 'hs_52.jpg' );
-//	shade5.mipmaps[ 2 ] = mipmap( 'hs_53.jpg' );
-//	shade5.mipmaps[ 3 ] = mipmap( 'hs_54.jpg' );
-
-	
-	shade6.mipmaps[ 0 ] = mipmap( 'hs_61.jpg',32 );
-//	shade6.mipmaps[ 1 ] = mipmap( 'hs_62.jpg' );
-//	shade6.mipmaps[ 2 ] = mipmap( 'hs_63.jpg' );
-//	shade6.mipmaps[ 3 ] = mipmap( 'hs_64.jpg' );
-
-
-
-/*	for( var i = 0; i < hatchTextures1.length; i++ ) {
-		var tex = hatchTextures1[i];
-		tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-	}*/
-	///float zoomLevel = shaderContents;
-	var buckets = [0.0, 0.2, 0.4, 0.6, 0.8, 1.1];
-	//var buckets = [0.0,0.3,0.6,0.9,1.2];
 	var hatchShaderContents = HATCH_UTILITY.shaderContents();
 
 	var material = new THREE.ShaderMaterial( { 
 		  uniforms: THREE.UniformsUtils.merge([
 		  	  THREE.UniformsLib['lights'],
 			  { 
-			  	shade1: { type: "t", value: null },
-			  	shade2: { type: "t", value: null },
-			  	shade3: { type: "t", value: null },
-			  	shade4: { type: "t", value: null },
-			  	shade5: { type: "t", value: null },
-			  	shade6: { type: "t", value: null },
+			  	hatchShade: { type: "t", value: null },
+			  	hatchShade1: { type: "t", value: null },
+			  	hatchShade2: { type: "t", value: null },
+			  	hatchShade3: { type: "t", value: null },
+			  	hatchShade4: { type: "t", value: null },
 				buckets: { type: 'fv1', value: buckets },
 				zoomLevel: { type: 'f', value: null},
 				repeat: { type: "v2", value: new THREE.Vector2(0, 0) }
@@ -205,34 +194,97 @@ HATCH_UTILITY.getShaderMaterial = function(zoomLevel) {
 		  lights: true
 	} );
 
-	material.uniforms.zoomLevel.value = zoomLevel;
-	material.uniforms.repeat.value.set( 4, 4 );
-	
-	material.uniforms.shade1.value = shade1;
-	material.uniforms.shade2.value = shade2;
-	material.uniforms.shade3.value = shade3;
-	material.uniforms.shade4.value = shade4;
-	material.uniforms.shade5.value = shade5;
-	material.uniforms.shade6.value = shade6;
 
+	var hatchShadeCanvas = HATCH_UTILITY.generateMipMap( 64, "#000" );
+	var hatchShadeCanvas1 = HATCH_UTILITY.generateMipMap( 64, "#f00" );
+	var hatchShadeCanvas2 = HATCH_UTILITY.generateMipMap( 64, "#0f0" );
+	var hatchShadeCanvas3 = HATCH_UTILITY.generateMipMap( 64, "#00f" );
+	var hatchShadeCanvas4 = HATCH_UTILITY.generateMipMap( 64, "#0ff" );
 
-	material.uniforms.shade1.value.wrapS = 
-		material.uniforms.shade1.value.wrapT = THREE.RepeatWrapping;
+	var hatchShadeTexture =  new THREE.Texture( hatchShadeCanvas, 
+		THREE.UVMapping, 
+		THREE.RepeatWrapping, 
+		THREE.RepeatWrapping,
+		THREE.NearestFilter,
+		THREE.LinearMipMapLinearFilter );
+	var hatchShadeTexture1 = new THREE.Texture( hatchShadeCanvas1, 
+		THREE.UVMapping, 
+		THREE.RepeatWrapping, 
+		THREE.RepeatWrapping,
+		THREE.NearestFilter,
+		THREE.LinearMipMapLinearFilter );
+	var hatchShadeTexture2 = new THREE.Texture( hatchShadeCanvas2, 
+		THREE.UVMapping, 
+		THREE.RepeatWrapping, 
+		THREE.RepeatWrapping,
+		THREE.NearestFilter,
+		THREE.LinearMipMapLinearFilter );
+	var hatchShadeTexture3 = new THREE.Texture( hatchShadeCanvas3, 
+		THREE.UVMapping, 
+		THREE.RepeatWrapping, 
+		THREE.RepeatWrapping,
+		THREE.NearestFilter,
+		THREE.LinearMipMapLinearFilter );
+	var hatchShadeTexture4 = new THREE.Texture( hatchShadeCanvas4, 
+		THREE.UVMapping, 
+		THREE.RepeatWrapping, 
+		THREE.RepeatWrapping,
+		THREE.NearestFilter,
+		THREE.LinearMipMapLinearFilter );
 
-	material.uniforms.shade2.value.wrapS = 
-		material.uniforms.shade2.value.wrapT = THREE.RepeatWrapping;
+	hatchShadeTexture.mipmaps[0] = hatchShadeCanvas;
+	hatchShadeTexture.mipmaps[1] = HATCH_UTILITY.generateMipMap( 32, "#ff0000" );
+	hatchShadeTexture.mipmaps[2] = HATCH_UTILITY.generateMipMap( 16, "#00ff00" );
+	hatchShadeTexture.mipmaps[3] = HATCH_UTILITY.generateMipMap( 8, "#0000ff" );
+	hatchShadeTexture.mipmaps[4] = HATCH_UTILITY.generateMipMap( 4, "#00ffff" );
+	hatchShadeTexture.mipmaps[5] = HATCH_UTILITY.generateMipMap( 2, "#ff00ff" );
+	hatchShadeTexture.mipmaps[6] = HATCH_UTILITY.generateMipMap( 1, "#ffff00" );
 
-	material.uniforms.shade3.value.wrapS = 
-		material.uniforms.shade3.value.wrapT = THREE.RepeatWrapping;
+	hatchShadeTexture1.mipmaps[0] = hatchShadeCanvas1;
+	hatchShadeTexture1.mipmaps[1] = HATCH_UTILITY.generateMipMap( 32, "#ff0000" );
+	hatchShadeTexture1.mipmaps[2] = HATCH_UTILITY.generateMipMap( 16, "#00ff00" );
+	hatchShadeTexture1.mipmaps[3] = HATCH_UTILITY.generateMipMap( 8, "#0000ff" );
+	hatchShadeTexture1.mipmaps[4] = HATCH_UTILITY.generateMipMap( 4, "#00ffff" );
+	hatchShadeTexture1.mipmaps[5] = HATCH_UTILITY.generateMipMap( 2, "#ff00ff" );
+	hatchShadeTexture1.mipmaps[6] = HATCH_UTILITY.generateMipMap( 1, "#ffff00" );
 
-	material.uniforms.shade4.value.wrapS = 
-		material.uniforms.shade4.value.wrapT = THREE.RepeatWrapping;
+	hatchShadeTexture2.mipmaps[0] = hatchShadeCanvas2;
+	hatchShadeTexture2.mipmaps[1] = HATCH_UTILITY.generateMipMap( 32, "#ff0000" );
+	hatchShadeTexture2.mipmaps[2] = HATCH_UTILITY.generateMipMap( 16, "#00ff00" );
+	hatchShadeTexture2.mipmaps[3] = HATCH_UTILITY.generateMipMap( 8, "#0000ff" );
+	hatchShadeTexture2.mipmaps[4] = HATCH_UTILITY.generateMipMap( 4, "#00ffff" );
+	hatchShadeTexture2.mipmaps[5] = HATCH_UTILITY.generateMipMap( 2, "#ff00ff" );
+	hatchShadeTexture2.mipmaps[6] = HATCH_UTILITY.generateMipMap( 1, "#ffff00" );
 
-	material.uniforms.shade5.value.wrapS = 
-		material.uniforms.shade5.value.wrapT = THREE.RepeatWrapping;
+	hatchShadeTexture3.mipmaps[0] = hatchShadeCanvas3;
+	hatchShadeTexture3.mipmaps[1] = HATCH_UTILITY.generateMipMap( 32, "#ff0000" );
+	hatchShadeTexture3.mipmaps[2] = HATCH_UTILITY.generateMipMap( 16, "#00ff00" );
+	hatchShadeTexture3.mipmaps[3] = HATCH_UTILITY.generateMipMap( 8, "#0000ff" );
+	hatchShadeTexture3.mipmaps[4] = HATCH_UTILITY.generateMipMap( 4, "#00ffff" );
+	hatchShadeTexture3.mipmaps[5] = HATCH_UTILITY.generateMipMap( 2, "#ff00ff" );
+	hatchShadeTexture3.mipmaps[6] = HATCH_UTILITY.generateMipMap( 1, "#ffff00" );
 
-	material.uniforms.shade6.value.wrapS = 
-		material.uniforms.shade6.value.wrapT = THREE.RepeatWrapping;
+	hatchShadeTexture4.mipmaps[0] = hatchShadeCanvas4;
+	hatchShadeTexture4.mipmaps[1] = HATCH_UTILITY.generateMipMap( 32, "#ff0000" );
+	hatchShadeTexture4.mipmaps[2] = HATCH_UTILITY.generateMipMap( 16, "#00ff00" );
+	hatchShadeTexture4.mipmaps[3] = HATCH_UTILITY.generateMipMap( 8, "#0000ff" );
+	hatchShadeTexture4.mipmaps[4] = HATCH_UTILITY.generateMipMap( 4, "#00ffff" );
+	hatchShadeTexture4.mipmaps[5] = HATCH_UTILITY.generateMipMap( 2, "#ff00ff" );
+	hatchShadeTexture4.mipmaps[6] = HATCH_UTILITY.generateMipMap( 1, "#ffff00" );
+
+	material.uniforms.repeat.value.set( 10, 10 );
+	material.uniforms.hatchShade.value = hatchShadeTexture;
+	material.uniforms.hatchShade1.value = hatchShadeTexture1;
+	material.uniforms.hatchShade2.value = hatchShadeTexture2;
+	material.uniforms.hatchShade3.value = hatchShadeTexture3;
+	material.uniforms.hatchShade4.value = hatchShadeTexture4;
+
+	hatchShadeTexture.needsUpdate = true; 
+	hatchShadeTexture1.needsUpdate = true;
+	hatchShadeTexture2.needsUpdate = true;
+	hatchShadeTexture3.needsUpdate = true;
+	hatchShadeTexture4.needsUpdate = true;
+
 
 	return material;
 }
