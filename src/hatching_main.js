@@ -20,7 +20,6 @@ window.onload = function() {
 	animate();	
 }
 
-
 function init() {
 
 	renderer = new THREE.WebGLRenderer();
