@@ -15,8 +15,10 @@ var loader, onProgress, onError;
 
 var controls;
 
-init();
-animate();
+window.onload = function() {
+	init();
+	animate();	
+}
 
 function init() {
 
