@@ -96,6 +96,12 @@ HATCH_UTILITY.shaderContents = function() {
 
 				   //  "}	",
 			    // "}",
+			    //"if (textureColor[0] > 0.9){",
+			    //	"gl_FragColor = vec4(1.0,1.0,1.0,1.0);",
+			    //"}",
+			    //"else {",
+			    //	"gl_FragColor = vec4(0.0,0.0,0.0,1.0);",
+			    //"}",
 			    "gl_FragColor = textureColor;",
 			    // "gl_FragColor = vec4(luminosity, 0.0, 0.0, 1.0);",
 			"}"
@@ -125,14 +131,16 @@ HATCH_UTILITY.generateMipMapFromJPG = function(size,sizeString,name){
 
 	var c=document.getElementById(name);
 	var ctx=c.getContext("2d");
-	var imageName = name.concat("2");
+	var imageName = name.concat("I");
 
-	var img = document.createElement(imageName);
+	var img = document.getElementById(imageName);
+
+	/*var img = document.createElement(imageName);
 	img = new Image();
 	img.src = name + ".jpg";
 	img.width = sizeString;
 	img.height = sizeString;
-
+*/
 
 	var pat=ctx.createPattern(img,'no-repeat');
 	ctx.rect(0,0,size,size);
