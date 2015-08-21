@@ -62,27 +62,34 @@ HATCH_UTILITY.shaderContents = function() {
 			    "float mult;",
 
 
-			    //  More realistic luminosity calculation
-			    // "float luminosity = 0.21 * addedLights.r + ", 
-			    // 				   "0.72 * addedLights.g + ",
-			    // 				   "0.07 * addedLights.b; ",
-				"float luminosity = (addedLights.r + addedLights.g + addedLights.b) / 3.0;",
-
+			    // //  More realistic luminosity calculation
+			    //  "float luminosity = 0.21 * addedLights.r + ", 
+			    //  				   "0.72 * addedLights.g + ",
+			    //  				   "0.07 * addedLights.b; ",
+				// "float luminosity = (addedLights.r + addedLights.g + addedLights.b) / 3.0;",
+				"float luminosity = addedLights.g;",
+				"float mult1 = 0.0;",
 			    "if( luminosity < buckets[0] ) { ",
 			    "	float mult = abs(luminosity - buckets[0])/(buckets[1] - buckets[0]);",
-			    "	textureColor = texture2D( hatchShade5, vUv ) * (mult) + texture2D( hatchShade4, vUv ) * (1.0-mult);",
+			    "	textureColor = texture2D( hatchShade5, vUv ) * (mult1) + texture2D( hatchShade4, vUv ) * (1.0-mult1);",
+			    "	gl_FragColor = vec4(0.0,0.0,0.0,1.0);",
+
 			    "} else if( luminosity < buckets[1] ) { ",
 			    "	float mult = abs(luminosity - buckets[1])/(buckets[2] - buckets[1]);",
-			    "	textureColor = texture2D( hatchShade4, vUv ) * (mult) + texture2D( hatchShade3, vUv ) * (1.0-mult);",
+			    "	textureColor = texture2D( hatchShade4, vUv ) * (mult1) + texture2D( hatchShade3, vUv ) * (1.0-mult1);",
+			    "	gl_FragColor = vec4(0.2,0.2,0.2,1.0);",
 			    "} else if( luminosity < buckets[2] ) { ",
 			    "	float mult = abs(luminosity - buckets[2])/(buckets[3] - buckets[2]);",
-			    "	textureColor = texture2D( hatchShade3, vUv ) * (mult) + texture2D( hatchShade2, vUv ) * (1.0-mult);",
+			    "	textureColor = texture2D( hatchShade3, vUv ) * (mult1) + texture2D( hatchShade2, vUv ) * (1.0-mult1);",
+			    "	gl_FragColor = vec4(0.4,0.4,0.4,1.0);",
 			    "} else if( luminosity < buckets[3] ) { ",
-			    "	float mult = abs(luminosity - buckets[3])/(buckets[4] - buckets[3]);",
-			    "	textureColor = texture2D( hatchShade2, vUv ) * (mult) + texture2D( hatchShade1, vUv ) * (1.0-mult);",
+			    "	float mult =abs(luminosity - buckets[3])/(buckets[4] - buckets[3]);",
+			    "	textureColor = texture2D( hatchShade2, vUv ) * (mult1) + texture2D( hatchShade1, vUv ) * (1.0-mult1);",
+			    "	gl_FragColor = vec4(0.6,0.6,0.6,1.0);",
 			    "} else { ",
-			    "	float mult = abs(1.0 - luminosity)/(1.0 - buckets[4]);",
-			    "	textureColor = texture2D( hatchShade1, vUv ) * (mult) + texture2D( hatchShade, vUv ) * (1.0-mult);",
+			    "	float mult =abs(1.0 - luminosity)/(1.0 - buckets[4]);",
+			    "	textureColor = texture2D( hatchShade1, vUv ) * (mult1) + texture2D( hatchShade, vUv ) * (1.0-mult1);",
+			    "	gl_FragColor = vec4(0.8,0.8,0.8,1.0);",
 			    "}",
 
 			    // "for(int c = 0; c < 3; c++ ) {",
@@ -102,7 +109,7 @@ HATCH_UTILITY.shaderContents = function() {
 			    //"else {",
 			    //	"gl_FragColor = vec4(0.0,0.0,0.0,1.0);",
 			    //"}",
-			    "gl_FragColor = textureColor;",
+			    "gl_FragColor = luminosity*vec4(1.0,1.0,1.0,0.0) + vec4(0.0,0.0,0.0,1.0);",
 			    // "gl_FragColor = vec4(luminosity, 0.0, 0.0, 1.0);",
 			"}"
 		].join('\n')

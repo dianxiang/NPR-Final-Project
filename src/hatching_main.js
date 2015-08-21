@@ -15,8 +15,11 @@ var loader, onProgress, onError;
 
 var controls;
 
-init();
-animate();
+window.onload = function() {
+	init();
+	animate();	
+}
+
 
 function init() {
 
@@ -26,14 +29,16 @@ function init() {
 	document.body.appendChild( renderer.domElement );
 
 	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100000 );
-	camera.position.z = 400;
+	camera.position.z = 200;
+	camera.position.y = 100;
+
 
 	scene = new THREE.Scene();
 	normalScene = new THREE.Scene();
 	depthScene = new THREE.Scene();
 
 
-	light = new THREE.SpotLight( 0xff0aaa, 1, 1000 );
+	light = new THREE.SpotLight( 0xffffff, 1.0, 1000 );
 	light.position.set(200, 200, 0).normalize();
 	scene.add(light);
 
@@ -59,7 +64,7 @@ function init() {
 	hatchShaderMaterial = HATCH_UTILITY.getShaderMaterial(zoomLevel);
 
 	// Teapot object
-	onProgress = function( xhr ) { console.log( "loading" ); }
+	/*onProgress = function( xhr ) { console.log( "loading" ); }
 	onError = function( xhr ) { alert( "FUCK, can't load this shit!" ); };
 	loader = new THREE.OBJLoader();
 	loader.load( 'teapot/teapot.obj', function( object ) {
@@ -83,7 +88,7 @@ function init() {
 		
 	}, onProgress, onError );
 
-
+*/
 	// // Box Geometry
 	// var boxGeometry = new THREE.BoxGeometry( 50, 50, 50 );
 	// var boxObj = new THREE.Mesh( boxGeometry, hatchShaderMaterial );
@@ -112,19 +117,23 @@ function init() {
 	// normalScene.add( normalTorusObj );
 	// depthScene.add( depthTorusObj );
 
-	// // Sphere Geometry
-	// var sphereGeometry = new THREE.SphereGeometry( 40, 32, 32 );
-	// var sphereObj = new THREE.Mesh( sphereGeometry, hatchShaderMaterial );
-	// var normalSphereObj = new THREE.Mesh( sphereGeometry, normalMaterial );
-	// var depthSphereObj = new THREE.Mesh( sphereGeometry, depthMaterial );
+	// Sphere Geometry
+	var sphereGeometry = new THREE.SphereGeometry( 40, 32, 32 );
+	var sphereObj = new THREE.Mesh( sphereGeometry, hatchShaderMaterial );
+	var normalSphereObj = new THREE.Mesh( sphereGeometry, normalMaterial );
+	var depthSphereObj = new THREE.Mesh( sphereGeometry, depthMaterial );
 
-	// sphereObj.position.set(0, 160, 0);
-	// normalSphereObj.position.set(0, 160, 0);
-	// depthSphereObj.position.set(0, 160, 0);
+	sphereObj.computeVertexNormals();
+	normalSphereObj.computeVertexNormals();
+	depthSphereObj.computeVertexNormals();
+
+	sphereObj.position.set(0, 160, 0);
+	normalSphereObj.position.set(0, 160, 0);
+	depthSphereObj.position.set(0, 160, 0);
 	
-	// scene.add( sphereObj );
-	// normalScene.add( normalSphereObj );
-	// depthScene.add( depthSphereObj );
+	scene.add( sphereObj );
+	normalScene.add( normalSphereObj );
+	depthScene.add( depthSphereObj );
 
 
 	
@@ -182,6 +191,7 @@ function init() {
 	controls = new THREE.OrbitControls(camera, renderer.domElement);
 
 	window.addEventListener( 'resize', onWindowResize, false );
+	window.addEventListener( 'keypress', onKeyPress, false );
 
 }
 
@@ -195,13 +205,25 @@ function onWindowResize() {
 	edgePass.uniforms[ 'aspect' ].value.y = window.innerHeight;
 }
 
+function onKeyPress() {
+	var timer = Date.now() * 0.00025;
+
+	light.position.x = 70.139;//Math.sin( timer * 7 ) * 100;
+	light.position.y = 70.3028;//Math.cos( timer * 5 ) * 100;
+	light.position.z = 70.9542;//96.4621299747294;//Math.cos( timer * 3 ) * 100;
+	camera.position.z = 200;
+	camera.position.y = 100;
+	console.log( light );
+	console.log( camera);
+}
+
 function animate() {
 	requestAnimationFrame( animate );
 
-	var timer = Date.now() * 0.00025;
-	light.position.x = Math.sin( timer * 7 ) * 300;
-	light.position.y = Math.cos( timer * 5 ) * 300;
-	light.position.z = Math.cos( timer * 3 ) * 300;
+	// var timer = Date.now() * 0.00025;
+	// light.position.x = Math.sin( timer * 7 ) * 100;
+	// light.position.y =Math.cos( timer * 5 ) * 100;
+	// light.position.z = Math.cos( timer * 3 ) * 100;
 
 
 	renderer.setClearColor(0xffffff);
